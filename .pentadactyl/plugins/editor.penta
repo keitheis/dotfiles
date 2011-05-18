@@ -1,0 +1,49 @@
+" Author: Yang Zou
+" Email: frederick.zou@gmail.com
+" Last Modified: Sun 08 May 2011 05:08:30 PM CST
+" License: WTFPL
+js <<EOF
+var dynamicEditor = function() {
+	if (!options["editor"])
+		return;
+	
+	let textBox = config.isComposeWindow ? null : dactyl.focusedElement;
+	let line, column;
+	if (textBox) {
+		// 检测我们是否在firebug命令行中
+		let ownerDocument = textBox.ownerDocument;
+		let href = ownerDocument.location.href;
+		let seteditor = "set editor='gvim -f -c \":set ft=bbcode\" -c \":call cursor(<line>, <column>)\" <file>'";
+		if (textBox.parentNode.parentNode.getAttribute('id')=='fbLargeCommandLine') {
+			seteditor = "set editor='gvim -f -c \":set ft=javascript\" -c \":call cursor(<line>, <column>)\" <file>'";
+		}
+		if (textBox.parentNode.parentNode.getAttribute('id')=='fbCommandLine') {
+			seteditor = "set editor='gvim -f -c \":set ft=javascript\" -c \":call cursor(<line>, <column>)\" <file>'";
+		}
+		if (href == "chrome://firebug/content/panel.html" && textBox.getAttribute('class')=="styleSheetEditor fullPanelEditor ") {
+			seteditor = "set editor='gvim -f -c \":set ft=css\" -c \":call cursor(<line>, <column>)\" <file>'";
+		}
+		if (href == "chrome://firebug/content/panel.html" && textBox.getAttribute('class')=="htmlEditor fullPanelEditor ") {
+			seteditor = "set editor='gvim -f -c \":set ft=html\" -c \":call cursor(<line>, <column>)\" <file>'";
+		}
+		let saved_editor = options.get('editor').value;
+		dactyl.execute(seteditor);
+		events.feedkeys('<C-i>', true);
+		dactyl.execute("set editor='"+saved_editor+"'");
+	} else {
+		events.feedkeys('<C-i>', true);
+	}
+};
+function setOpt() {
+	if (!options["editor"])
+		return;
+	let saved_editor = options.get('editor').value;
+	dactyl.execute("set editor='gvim -f -c \":set ft=html\" +<line> <file>'");
+	events.feedkeys('gF', true);
+	dactyl.execute("set editor='"+saved_editor+"'");
+	// dactyl.timeout(function () dactyl.execute(saved_editor), 1000);
+}
+EOF
+map -modes=i,t -builtin -silent -js <C-i> dynamicEditor()
+map -modes=n -builtin -silent -js gF setOpt()
+set editor='gvim -f -c ":set ft=bbcode" -c ":call cursor(<line>, <column>)" <file>'
