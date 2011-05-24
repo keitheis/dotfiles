@@ -1,30 +1,30 @@
 var shortenURL = function (args) {
-	if (typeof args[0] == "undefined" || args[0].length==0) {
-		var url = encodeURI(buffer.URL);
-	} else {
-		var url = encodeURI(args[0]);
-	}
-
-	if (!url || url.length == 0) {
-		dactyl.echo('Empty String');
-		return -1;
-	}
+	let url = args.join(" ") || buffer.URL;
+	if (url == "")
+		dactyl.echomsg("Please specifically a uri.");
+	else
+		url = encodeURI(url);
+	let invert = options.get("shorten-yank").value;
+	if (args.bang)
+		invert = !invert;
 	var req = new XMLHttpRequest();
-	// url = encodeURIComponent(url);
 	var callback = function (data) {
-		dactyl.echo(data);
-		if (!args.bang) {
+		if (invert)
 			dactyl.clipboardWrite(data, true);
-		}
+		else
+			dactyl.echomsg(data);
 	};
-	switch ( options.get("shorten-engine").value ) {
-		case 'bitly' :
+	let engine = options.get("shorten-engine").value;
+	if (args["-e"])
+		engine = args["-e"];
+	switch (engine) {
+		case 'b' :
 			bitly(req, url, callback);
 			break;
-		case 'google' :
+		case 'g' :
 			google(req, url, callback);
 			break;
-		case 'isgd' :
+		case 'i' :
 			isgd(req, url, callback);
 			break;
 		default :
@@ -37,6 +37,8 @@ var bitly = function (req, url, callback) {
 	 * Reference
 	 * http://code.google.com/p/bitly-api/
 	 */
+	if (!(/^http:\/\//.test(url)))
+		url = "http://" + url;
 	var querystring = "login=grassofhust&apiKey=R_696fd603075a1cedeb0fd56bbaa58033&format=txt&longUrl="+url;
 	req.open("GET",
 		"http://api.bit.ly/v3/shorten?" + querystring,
@@ -115,21 +117,39 @@ group.commands.add(["shor[ten]", "sht"],
 	shortenURL,
 	{
 		argCount: "?",
-		bang: true
+		bang: true,
+		options: [
+			{
+				names: ["-e"],
+				description: "URL Shorten Engine",
+				type: CommandOption.STRING,
+				completer: [
+					["b","Bitly helps you share, track, and analyze your links."],
+					["g", "Google URL Shortener"],
+					["i", "is.gd - a URL shortener. Mmmm, tasty URLs!"]
+				]
+			}
+		]
 	}
 );
 
 // Add custom settings
 options.add(["shorten-engine", "shte"],
 	"Custom Shorten Engine",
-	"string", "bitly",
+	"string", "i",
 	{
 		completer : function (context) [
-			["bitly","Bitly helps you share, track, and analyze your links."],
-			["google", "Google URL Shortener"],
-			["isgd", "is.gd - a URL shortener. Mmmm, tasty URLs!"]
+			["b","Bitly helps you share, track, and analyze your links."],
+			["g", "Google URL Shortener"],
+			["i", "is.gd - a URL shortener. Mmmm, tasty URLs!"]
 		]
 	}
+);
+
+options.add(["shorten-yank", "shty"],
+	"Copy Shorten URL to ClipBoard",
+	"boolean",
+	true
 );
 
 
