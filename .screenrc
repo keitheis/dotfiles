@@ -1,0 +1,75 @@
+# setenv LC_ALL zh_CN.UTF-8
+# setenv LANG zh_CN.UTF-8
+maptimeout 100
+defutf8 on
+defbce "on"
+altscreen on
+# settings scrollback buffers to 1000 lines
+defscrollback 1000
+
+# mousetrack
+# defmousetrack on
+
+# monitor
+defmonitor on
+autodetach on
+attrcolor b ".I"
+startup_message off
+# fixed rxvt title
+# https://wiki.archlinux.org/index.php/Screen_Tips#Turn_your_hardstatus_line_into_a_dynamic_urxvt.7Cxterm.7Caterm_window_title
+backtick 1 5 5 true
+hardstatus string "%t %h"
+caption always
+caption string "%{wk}%?%-w%?%{bw}%n*%f %t%?(%u)%?%{wk}%?%+w %=%{mk}%t@%H %{yk}%D %{ck}%M%{wk} %{ck}%d %{gk}%c"
+# terminfo rxvt-unicode 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+terminfo xterm-256color 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+termcapinfo rxvt*|xterm* 'hs:ts=\E]2;:fs=\007:ds=\E]2;\007:ti@:te@'
+
+# Start at window 1
+# https://wiki.archlinux.org/index.php/Screen_Tips#Start_at_window_1
+bind c screen 1
+bind  screen 1
+bind 0 select 10
+
+# key bindings
+bind , prev
+bind . next
+register n "^a^c"
+#  means alt
+bindkey "`" select 0
+bindkey "1" select 1
+bindkey "2" select 2
+bindkey "3" select 3
+bindkey "4" select 4
+bindkey "5" select 5
+bindkey "6" select 6
+bindkey "7" select 7
+bindkey "8" select 8
+bindkey "9" select 9
+bindkey "0" select 10
+bindkey "." next
+bindkey "," prev
+bindkey ";" copy
+bindkey "'" paste
+# bindkey "|" split -v
+bindkey "-" split
+bindkey -m > eval "stuff ' '" writebuf "exec sh -c 'xsel -n < /tmp/screen-exchange'"
+#bindkey -k k2 title					# F2  | Reset title
+# bindkey -k "k2" title 
+
+###################
+# default windows #
+###################
+
+# shelltitle "zsh"
+chdir
+screen -t zsh 1
+screen -t vim 2
+screen -t mysql 3
+screen -t php 4
+screen -t sdcv 5
+screen -t irssi 6
+screen -t root 7
+screen -t remote 8
+
+# screen -t irc 6 irssi
