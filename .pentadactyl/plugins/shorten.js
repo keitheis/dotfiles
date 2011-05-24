@@ -142,7 +142,7 @@ group.commands.add(["shor[ten]", "sht"],
 	"Shorten current url or specific url",
 	shortenURL,
 	{
-		argCount: "?",
+		argCount: "*",
 		bang: true,
 		options: opt
 	}
