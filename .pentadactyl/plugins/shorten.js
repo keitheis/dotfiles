@@ -1,18 +1,19 @@
 var shortenURL = function (args) {
 	let url = args.join(" ") || buffer.URL;
 	if (url == "")
-		dactyl.echomsg("Please specifically a uri.");
+		dactyl.echomsg("Please specifically a uri.", commandline.FORCE_SINGLELINE);
 	else
 		url = encodeURI(url);
 	let invert = options.get("shorten-yank").value;
 	if (args.bang)
 		invert = !invert;
+	// let pattern = /(http:\\)?((is.gd\/[a-zA-Z0-9]{5})|)/gi; // the candy
 	var req = new XMLHttpRequest();
 	var callback = function (data) {
 		if (invert)
-			dactyl.clipboardWrite(data, true);
+			dactyl.clipboardWrite(data.trim(), true);
 		else
-			dactyl.echomsg(data);
+			dactyl.echomsg(data.trim(), commandline.FORCE_SINGLELINE);
 	};
 	let engine = options.get("shorten-engine").value;
 	if (args["-e"])
@@ -37,7 +38,7 @@ var bitly = function (req, url, callback) {
 	 * Reference
 	 * http://code.google.com/p/bitly-api/
 	 */
-	if (!(/^http:\/\//.test(url)))
+	if (!(/^https?:\/\//.test(url)))
 		url = "http://" + url;
 	var querystring = "login=grassofhust&apiKey=R_696fd603075a1cedeb0fd56bbaa58033&format=txt&longUrl="+url;
 	req.open("GET",
@@ -111,6 +112,31 @@ var isgd = function (req, url, callback) {
 	req.send(null);
 }
 
+let opt = [];
+[
+	["-b","Bitly helps you share, track, and analyze your links."],
+	["-g", "Google URL Shortener"],
+	["-i", "is.gd - a URL shortener. Mmmm, tasty URLs!"]
+].forEach(function(item) {
+	let [a, d] = item;
+	opt.push({
+		names: [a],
+		description: [d],
+		type: CommandOption.NOARG
+	});
+});
+
+opt.push({
+	names: ["-e"],
+	description: "URL Shorten Engine",
+	type: CommandOption.STRING,
+	completer: [
+		["b","Bitly helps you share, track, and analyze your links."],
+		["g", "Google URL Shortener"],
+		["i", "is.gd - a URL shortener. Mmmm, tasty URLs!"]
+	]
+});
+
 // Add custom commands
 group.commands.add(["shor[ten]", "sht"],
 	"Shorten current url or specific url",
@@ -118,18 +144,7 @@ group.commands.add(["shor[ten]", "sht"],
 	{
 		argCount: "?",
 		bang: true,
-		options: [
-			{
-				names: ["-e"],
-				description: "URL Shorten Engine",
-				type: CommandOption.STRING,
-				completer: [
-					["b","Bitly helps you share, track, and analyze your links."],
-					["g", "Google URL Shortener"],
-					["i", "is.gd - a URL shortener. Mmmm, tasty URLs!"]
-				]
-			}
-		]
+		options: opt
 	}
 );
 
@@ -152,10 +167,3 @@ options.add(["shorten-yank", "shty"],
 	true
 );
 
-
-/*
-" command -nargs=0 shorten :execute "!shorten " + encodeURI(content.location.href)
-command! -nargs=? bitly javascript shortenURLBitLy(<q-args>)
-" map <silent> gy :javascript shortenURLBitLy(buffer.URL);<CR>
-
-*/
