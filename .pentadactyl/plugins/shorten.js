@@ -3,7 +3,7 @@ var shortenURL = function (args) {
 	if (url == "")
 		dactyl.echomsg("Please specifically a uri.", commandline.FORCE_SINGLELINE);
 	else
-		url = encodeURI(url);
+		url = encodeURIComponent(url);
 	let invert = options.get("shorten-yank").value;
 	if (args.bang)
 		invert = !invert;
