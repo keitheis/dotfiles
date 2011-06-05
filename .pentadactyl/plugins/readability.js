@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Sun 05 Jun 2011 07:22:35 PM CST
-// @Last Change: Sun 05 Jun 2011 07:55:25 PM CST
-// @Revision:    15
+// @Last Change: Sun 05 Jun 2011 08:13:09 PM CST
+// @Revision:    17
 // @Description:
 // @Usage:
 // @TODO:
@@ -13,6 +13,10 @@
 group.commands.add(["rea[dability]", "rea"],
 	"Read Comfortably—Anytime, Anywhere",
 	function (args) {
+		if (typeof rdb === "undefined") {
+			dactyl.echoerr("Missing readability Add-On", commandline.FORCE_SINGLELINE);
+			dactyl.timeout(function () {dactyl.open('https://www.readability.com/addons', {background:false, where:dactyl.NEW_TAB});}, 1000);
+		}
 		if (args.length == 0) {
 			rdb.overlay.read();
 		} else {
