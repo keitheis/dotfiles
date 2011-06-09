@@ -1,6 +1,6 @@
 " Author: Yang Zou
 " Email: frederick.zou@gmail.com
-" Last Modified: Sun 08 May 2011 05:08:30 PM CST
+" Last Modified: Thu 09 Jun 2011 04:21:51 PM CST
 " License: WTFPL
 js <<EOF
 var dynamicEditor = function() {
@@ -31,7 +31,11 @@ var dynamicEditor = function() {
 		events.feedkeys('<C-i>', true);
 		dactyl.execute("set editor='"+saved_editor+"'");
 	} else {
+		let seteditor = "set editor='gvim -f -c \":set ft=bbcode\" +<line> <file>'";
+		let saved_editor = options.get('editor').value;
+		dactyl.execute(seteditor);
 		events.feedkeys('<C-i>', true);
+		dactyl.execute("set editor='"+saved_editor+"'");
 	}
 };
 function setOpt() {
