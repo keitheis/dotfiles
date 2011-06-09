@@ -557,6 +557,7 @@ var services =
                     });
                 },
                 tags:function(user,password){
+                    return []; // temporary workaround
                     var returnValue = [];
                     var xhr = new XMLHttpRequest();
                     xhr.open("GET", "https://www.google.com/bookmarks", false, user, password);
