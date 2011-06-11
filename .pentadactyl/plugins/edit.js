@@ -17,7 +17,8 @@ var INFO =
         <description>
             <p>Open file or folder with associated program. When
 			[!] is provided, open file or folder in new tab. When [path]
-			is empty, open pentadactyl rc file.
+			is empty, open pentadactyl rc file. edit.js also can open jar
+			package in browser or archiver.
         </p>
         </description>
     </item>
@@ -150,11 +151,16 @@ group.commands.add(["edi[t]", "ei"],
 
 		var localFile = Components.classes["@mozilla.org/file/local;1"].
 			createInstance(Components.interfaces.nsILocalFile);
+		let jar_pattern = /\.jar$/;
+		let isJar = jar_pattern.test(path);
 		try {
 			localFile.initWithPath(path);
-			if (args.bang)
-				dactyl.open("file:///"+path, {background:false, where:dactyl.NEW_TAB});
-			else
+			if (args.bang) {
+				if (!isJar)
+					dactyl.open("file:///"+path, {background:false, where:dactyl.NEW_TAB});
+				else
+					dactyl.open("jar:file:///"+path+"!/", {background:false, where:dactyl.NEW_TAB});
+			} else
 				localFile.launch();
 		} catch (e) {
 			if (args.bang || !create)
