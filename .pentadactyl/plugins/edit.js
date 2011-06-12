@@ -64,7 +64,7 @@ const COMMON_DIRS = [
 ];
 
 const COMMON_FILES = [
-	{path: services.directory.get("ProfD", Ci.nsIFile).path+PATH_SEP+"prefs.js", description: "Preferences"},
+	{path: services.directory.get("PrefF", Ci.nsIFile).path, description: "Preferences"},
 	{path: services.directory.get("ProfD", Ci.nsIFile).path+PATH_SEP+"user.js", description: "User Preferences"},
 	{path: services.directory.get("ProfD", Ci.nsIFile).path+PATH_SEP+"chrome"+PATH_SEP+"userChrome.css", description: "User Preferences"},
 	{path: services.directory.get("ProfD", Ci.nsIFile).path+PATH_SEP+"chrome"+PATH_SEP+"userContent.css", description: "User Preferences"}
