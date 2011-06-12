@@ -59,7 +59,8 @@ const PATH_SEP = File.PATH_SEP;
 const COMMON_DIRS = [
 	{path: services.directory.get("ProfD", Ci.nsIFile).path+PATH_SEP+"chrome", description: "ProfD/chrome"},
 	{path: services.directory.get("ProfD", Ci.nsIFile).path, description: "profile directory"},
-	{path: services.directory.get("CurProcD", Ci.nsIFile).path, description: "installation (usually)"}
+	{path: services.directory.get("CurProcD", Ci.nsIFile).path, description: "installation (usually)"},
+	{path: services.directory.get("DefProfRt", Ci.nsIFile).path, description: "user directory"}
 ];
 
 const COMMON_FILES = [
@@ -363,3 +364,6 @@ options.add(
 	{
 	}
 );
+
+// -a option, absolute path
+// scriptnames
