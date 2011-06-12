@@ -293,7 +293,7 @@ group.commands.add(["edi[t]", "ei"],
 options.add( // TODO
 	["open-files", "opfs"],
 	"Common File lists",
-	"stringlist",
+	"stringmap",
 	"",
 	{
 
@@ -303,7 +303,7 @@ options.add( // TODO
 options.add( // TODO
 	["open-dirs", "opds"],
 	"Common Directory lists",
-	"stringlist",
+	"stringmap",
 	"",
 	{
 
