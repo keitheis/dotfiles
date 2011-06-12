@@ -99,7 +99,7 @@ function cpt(context, args) {
 	if (args.length == 1)
 		arg = args[0];
 
-	let absolute_pattern = /^\//;
+	let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
 	if (util.OS.isWindows)
 		absolute_pattern = /^.:/;
 
@@ -159,7 +159,8 @@ group.commands.add(["edi[t]", "ei"],
 					path = it.items[0].path;
 			}
 		}
-		let absolute_pattern = /^\//;
+		// let absolute_pattern = /^\//;
+		let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
 		if (util.OS.isWindows)
 			absolute_pattern = /^.:/;
 
@@ -382,4 +383,5 @@ options.add(
 );
 
 // -a option, absolute path
+// ~/ expandPath
 // scriptnames
