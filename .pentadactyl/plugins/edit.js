@@ -314,7 +314,9 @@ function findEditor (string) {
 let editors = [];
 if (util.OS.isWindows) {
 	editors = [
-		["notepad.exe", "A simple text editor for Microsoft Windows."]
+		["notepad.exe", "A simple text editor for Microsoft Windows."],
+		["C:\\Program Files\\", "Program Dir"],
+		["C:\\Program Files (x86)\\", "Program Dir (x86)"]
 	];
 } else {
 	editors = [
