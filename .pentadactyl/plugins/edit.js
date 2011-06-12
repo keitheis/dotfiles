@@ -155,7 +155,15 @@ group.commands.add(["edi[t]", "ei"],
 		let isJar = jar_pattern.test(path);
 		
 
-		localFile.initWithPath(path);
+		try {
+			localFile.initWithPath(path);
+		} catch (e if e.result === Cr.NS_ERROR_FILE_UNRECOGNIZED_PATH) { // relative path
+			dactyl.echoerr(path + " doesn't exists!", commandline.FORCE_SINGLELINE);
+			return false;
+		} catch (e) {
+			dactyl.echoerr(path + " doesn't exists!", commandline.FORCE_SINGLELINE);
+			return false;
+		}
 		if (localFile.exists()) {
 			if (args.bang) {
 				if (!isJar)
@@ -199,7 +207,7 @@ group.commands.add(["edi[t]", "ei"],
 			}
 		} else {
 			if (args.bang || !create)
-				dactyl.echoerr("File or directory doesn't exists!", commandline.FORCE_SINGLELINE);
+				dactyl.echoerr(path + " doesn't exists!", commandline.FORCE_SINGLELINE);
 			else {
 				let prompt = "Do you want to create file or directory (" + path + ") y/n: ";
 				commandline.input(prompt, function(accept) {
@@ -242,7 +250,7 @@ group.commands.add(["edi[t]", "ei"],
 								} else
 									localFile.launch();
 							} catch (e if e.result == Cr.NS_ERROR_FILE_ALREADY_EXISTS ) {
-								dactyl.echoerr("File or directory already exists!", commandline.FORCE_SINGLELINE);
+								dactyl.echoerr(path + " already exists!", commandline.FORCE_SINGLELINE);
 							} catch (e) {
 								; //
 							}
