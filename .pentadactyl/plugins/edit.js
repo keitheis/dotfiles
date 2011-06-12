@@ -153,18 +153,53 @@ group.commands.add(["edi[t]", "ei"],
 			createInstance(Components.interfaces.nsILocalFile);
 		let jar_pattern = /\.jar$/;
 		let isJar = jar_pattern.test(path);
-		try {
-			localFile.initWithPath(path);
+		
+
+		localFile.initWithPath(path);
+		if (localFile.exists()) {
 			if (args.bang) {
 				if (!isJar)
 					dactyl.open("file:///"+path, {background:false, where:dactyl.NEW_TAB});
 				else
 					dactyl.open("jar:file:///"+path+"!/", {background:false, where:dactyl.NEW_TAB});
-			} else
-				localFile.launch();
-		} catch (e) {
+			} else {
+				if (options["open-editor"] && localFile.isFile()) {
+					let suffies = options["open-suffix"];
+					let base = path.split(PATH_SEP).pop();
+					let opened = false;
+					for (var i = suffies.length - 1; i >= 0; i--) {
+						let pattern = new RegExp(suffies[i].replace(".", "\\.") + "$");
+						if (pattern.test(base)) {
+							if (util.OS.isWindows) {
+								try {
+									var file = Components.classes["@mozilla.org/file/local;1"]
+										.createInstance(Components.interfaces.nsILocalFile);
+									file.initWithPath(options["open-editor"]);
+
+									var process = Components.classes["@mozilla.org/process/util;1"]
+										.createInstance(Components.interfaces.nsIProcess);
+									process.init(file);
+									var args = [path];
+									process.run(false, args, args.length);
+								} catch (e if e.result === Cr.NS_ERROR_FILE_UNRECOGNIZED_PATH) {
+									io.run(options["open-editor"], [path], false);
+								} catch (e) {
+									; // do nth
+								}
+							} else
+								io.run(options["open-editor"], [path], false);
+							opened = true;
+							break;
+						}
+					}
+					if (!opened)
+						localFile.launch();
+				} else
+					localFile.launch();
+			}
+		} else {
 			if (args.bang || !create)
-				dactyl.echoerr("File or folder doesn't exists", commandline.FORCE_SINGLELINE);
+				dactyl.echoerr("File or directory doesn't exists!", commandline.FORCE_SINGLELINE);
 			else {
 				let prompt = "Do you want to create file or directory (" + path + ") y/n: ";
 				commandline.input(prompt, function(accept) {
@@ -172,7 +207,40 @@ group.commands.add(["edi[t]", "ei"],
 						if (accept === "y") {
 							try {
 								localFile.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 438); // 438 digit
-								localFile.launch();
+								if (options["open-editor"] && localFile.isFile()) {
+									let suffies = options["open-suffix"];
+									let base = path.split(PATH_SEP).pop();
+									let opened = false;
+									for (var i = suffies.length - 1; i >= 0; i--) {
+										let pattern = new RegExp(suffies[i].replace(".", "\\.") + "$");
+										if (pattern.test(base)) {
+											if (util.OS.isWindows) {
+												try {
+													var file = Components.classes["@mozilla.org/file/local;1"]
+														.createInstance(Components.interfaces.nsILocalFile);
+													file.initWithPath(options["open-editor"]);
+
+													var process = Components.classes["@mozilla.org/process/util;1"]
+														.createInstance(Components.interfaces.nsIProcess);
+													process.init(file);
+													var args = [path];
+													process.run(false, args, args.length);
+												} catch (e if e.result === Cr.NS_ERROR_FILE_UNRECOGNIZED_PATH) {
+													io.run(options["open-editor"], [path], false);
+												} catch (e) {
+													; // do nth
+												}
+											} else
+												io.run(options["open-editor"], [path], false);
+
+											opened = true;
+											break;
+										}
+									}
+									if (!opened)
+										localFile.launch();
+								} else
+									localFile.launch();
 							} catch (e if e.result == Cr.NS_ERROR_FILE_ALREADY_EXISTS ) {
 								dactyl.echoerr("File or directory already exists!", commandline.FORCE_SINGLELINE);
 							} catch (e) {
@@ -213,5 +281,75 @@ options.add( // TODO
 	"",
 	{
 
+	}
+);
+
+function findEditor (string) {
+    var str = string.trimLeft();
+    var edge = false;
+    var index = 0;
+    while (!edge && index >= 0) {
+        index = str.indexOf(" ", index+1);
+        if (index >= 0) {
+            if (str[index -1] !== "\\")
+                edge = true;
+        } else
+            edge = true;
+    }
+
+    var editor = str;
+    if (index >= 0)
+        editor = str.substring(0,index);
+    return editor;
+}
+
+let editors = [];
+if (util.OS.isWindows) {
+	editors = [
+		["notepad.exe", "A simple text editor for Microsoft Windows."]
+	];
+} else {
+	editors = [
+		["emacs", "GNU Emacs"],
+		["gvim", "Vi IMproved"],
+		["gedit", "The official text editor of the GNOME desktop environment."],
+		["kate", "Kate | Get an Edge in Editing"]
+	];
+}
+let editor = findEditor(options["editor"]);
+if (editor.length > 0) {
+	let duplicated = false;
+	editors.forEach(function(item, idx) {
+		if (item[0] === editor) {
+			editors[idx][1] = "External editor from pentadactyl 'editor' option.";
+			duplicated = true;
+		}
+	})
+	if (!duplicated)
+		editors.push([editor, "External editor from pentadactyl 'editor' option."]);
+}
+
+options.add(
+	["open-editor", "oped"],
+	"Use Custom editor",
+	"string",
+	"",
+	{
+		validator: function() true,
+		completer: function(context) {
+			context.forkapply("oped", 0, completion, 'file', [false]);
+
+			context.title = ["editor", "description"];
+			context.completions = editors;
+		}
+	}
+);
+
+options.add(
+	["open-suffix", "opsu"],
+	"File patterns opened by external editor.",
+	"stringlist",
+	"_pentadactylrc,.pentadactylrc,.penta,.vim,.css,.html,.js,.txt,.ini",
+	{
 	}
 );
