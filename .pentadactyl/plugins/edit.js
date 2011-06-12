@@ -99,8 +99,18 @@ function cpt(context, args) {
 	if (args.length == 1)
 		arg = args[0];
 
-	dirs.forEach(function(dir) {
-		context.forkapply(dir.description, 0, completion, 'file', [false, dir.path+PATH_SEP+arg]);
+	let absolute_pattern = /^\//;
+	if (util.OS.isWindows)
+		absolute_pattern = /^.:/;
+
+	if (absolute_pattern.test(arg))
+		dirs.push({path:arg.match(/^(?:.*[\/\\])?/)[0], description:"Absolute Path"});
+
+	dirs.forEach(function(dir, idx) {
+		if (idx == dirs.length - 1 && absolute_pattern.test(arg))
+			context.forkapply(dir.description, 0, completion, 'file', [false, dir.path]);
+		else
+			context.forkapply(dir.description, 0, completion, 'file', [false, dir.path+PATH_SEP+arg]);
 		let lastSub = context.contextList[context.contextList.length - 1];
 		lastSub.keys.text = function (item) item.path.replace(dir.path+PATH_SEP, "");
 		lastSub.title[0] = dir.path;
@@ -149,6 +159,12 @@ group.commands.add(["edi[t]", "ei"],
 					path = it.items[0].path;
 			}
 		}
+		let absolute_pattern = /^\//;
+		if (util.OS.isWindows)
+			absolute_pattern = /^.:/;
+
+		if (absolute_pattern.test(args[0]))
+			path = args[0];
 
 		var localFile = Components.classes["@mozilla.org/file/local;1"].
 			createInstance(Components.interfaces.nsILocalFile);
