@@ -57,17 +57,18 @@ function getRCFile() {
 const PATH_SEP = File.PATH_SEP;
 
 const COMMON_DIRS = [
-	{path: services.directory.get("ProfD", Ci.nsIFile).path+PATH_SEP+"chrome", description: "ProfD/chrome"},
-	{path: services.directory.get("ProfD", Ci.nsIFile).path, description: "profile directory"},
-	{path: services.directory.get("CurProcD", Ci.nsIFile).path, description: "installation (usually)"},
-	{path: services.directory.get("DefProfRt", Ci.nsIFile).path, description: "user directory"}
+	{path: services.directory.get("UChrm", Ci.nsIFile).path, description: "User Chrome Directory"},
+	{path: services.directory.get("ProfD", Ci.nsIFile).path, description: "User Profile Directory"},
+	{path: services.directory.get("CurProcD", Ci.nsIFile).path, description: "Installation (usually)"},
+	{path: services.directory.get("DefProfRt", Ci.nsIFile).path, description: "User Directory"},
+	{path: services.directory.get("Desk", Ci.nsIFile).path, description: "Desktop Directory"}
 ];
 
 const COMMON_FILES = [
 	{path: services.directory.get("PrefF", Ci.nsIFile).path, description: "Preferences"},
 	{path: services.directory.get("ProfD", Ci.nsIFile).path+PATH_SEP+"user.js", description: "User Preferences"},
-	{path: services.directory.get("ProfD", Ci.nsIFile).path+PATH_SEP+"chrome"+PATH_SEP+"userChrome.css", description: "User Preferences"},
-	{path: services.directory.get("ProfD", Ci.nsIFile).path+PATH_SEP+"chrome"+PATH_SEP+"userContent.css", description: "User Preferences"}
+	{path: services.directory.get("UChrm", Ci.nsIFile).path+PATH_SEP+"userChrome.css", description: "CSS for the UI chrome of the Mozilla application"},
+	{path: services.directory.get("UChrm", Ci.nsIFile).path+PATH_SEP+"userContent.css", description: "CSS for content inside windows"}
 ];
 
 let rcfile = getRCFile();
