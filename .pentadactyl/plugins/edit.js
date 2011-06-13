@@ -102,7 +102,7 @@ function cpt(context, args) {
 
 	let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
 	if (util.OS.isWindows)
-		absolute_pattern = /^.:/;
+		absolute_pattern = /^[a-zA-Z]:\\/;
 
 	if (absolute_pattern.test(arg))
 		dirs.push({path:arg.match(/^(?:.*[\/\\])?/)[0], description:"Absolute Path"});
@@ -163,7 +163,7 @@ group.commands.add(["edi[t]", "ei"],
 		// let absolute_pattern = /^\//;
 		let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
 		if (util.OS.isWindows)
-			absolute_pattern = /^.:/;
+			absolute_pattern = /^[a-zA-Z]:\\/;
 
 		if (absolute_pattern.test(args[0]))
 			path = args[0];
