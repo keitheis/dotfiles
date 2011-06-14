@@ -55,6 +55,7 @@ function getRCFile() {
 }
 
 const PATH_SEP = File.PATH_SEP;
+// const PATH_SEP = "/";
 
 const COMMON_DIRS = [
 	{path: services.directory.get("UChrm", Ci.nsIFile).path, description: "User Chrome Directory"},
@@ -102,21 +103,24 @@ function cpt(context, args) {
 
 	let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
 	if (util.OS.isWindows)
-		absolute_pattern = /^[a-zA-Z]:\\/;
+		absolute_pattern = /^[a-zA-Z]:[\/\\]|~/;
 
 	if (absolute_pattern.test(arg))
 		dirs.push({path:arg.match(/^(?:.*[\/\\])?/)[0], description:"Absolute Path"});
 
 	dirs.forEach(function(dir, idx) {
-		if (idx == dirs.length - 1 && absolute_pattern.test(arg))
+		if (idx == dirs.length - 1 && absolute_pattern.test(arg)) {
 			context.forkapply(dir.description, 0, completion, 'file', [false, dir.path]);
-		else
+			let lastSub = context.contextList[context.contextList.length - 1];
+			lastSub.title[0] = dir.path;
+		} else {
 			context.forkapply(dir.description, 0, completion, 'file', [false, dir.path+PATH_SEP+arg]);
-		let lastSub = context.contextList[context.contextList.length - 1];
-		lastSub.keys.text = function (item) item.path.replace(dir.path+PATH_SEP, "");
-		lastSub.title[0] = dir.path;
-		lastSub.filter = arg;
-		lastSub.offset = context.offset;
+			let lastSub = context.contextList[context.contextList.length - 1];
+			lastSub.keys.text = function (item) item.path.replace(dir.path+PATH_SEP, ""); // TODO: /dir.path+PATH_SEP$/
+			lastSub.title[0] = dir.path + PATH_SEP;
+			lastSub.filter = arg;
+			lastSub.offset = context.offset;
+		}
 	});
 
 	context.title = ["Shortcuts", "Description"];
@@ -163,14 +167,16 @@ group.commands.add(["edi[t]", "ei"],
 		// let absolute_pattern = /^\//;
 		let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
 		if (util.OS.isWindows)
-			absolute_pattern = /^[a-zA-Z]:\\/;
+			absolute_pattern = /^[a-zA-Z]:[\/\\]|~/;
 
 		if (absolute_pattern.test(args[0]))
 			path = args[0];
 
+		path = File.expandPath(path);
+
 		var localFile = Components.classes["@mozilla.org/file/local;1"].
 			createInstance(Components.interfaces.nsILocalFile);
-		let jar_pattern = /\.jar$/;
+		let jar_pattern = /\.jar|\.xpi$/;
 		let isJar = jar_pattern.test(path);
 		
 
@@ -280,14 +286,15 @@ group.commands.add(["edi[t]", "ei"],
 		}
 	},
 	{
-		argCount: "*",
+		argCount: "?",
 		bang: true,
 		completer: function (context, args) { // TODO: expandPath
 			if (args.length <=1)
 				cpt(context, args);
 			else
 				context.completions = [];
-		}
+		},
+		literal: 0
 	}
 );
 
@@ -365,12 +372,14 @@ options.add(
 	"",
 	{
 		validator: function() true,
-		completer: function(context) {
-			context.forkapply("oped", 0, completion, 'file', [false]);
+		completer: function(context, args) {
+			context.forkapply("oped", 0, completion, 'file', [false, args[0]]);
+			// let lastSub = context.contextList[context.contextList.length - 1];
+			// lastSub.offset = args[0].length + context.offset;
 
 			context.title = ["editor", "description"];
 			context.completions = editors;
-		}
+		},
 	}
 );
 
