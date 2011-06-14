@@ -295,9 +295,7 @@ group.commands.add(["edi[t]", "ei"],
 	{
 		argCount: "?",
 		bang: true,
-		completer: function (context, args) { // TODO: expandPath
-				cpt(context, args);
-		},
+		completer: function (context, args) cpt(context, args), // TODO: expandPath
 		literal: 0
 	}
 );
@@ -396,6 +394,6 @@ options.add(
 	}
 );
 
-// -a option, absolute path
-// ~/ expandPath
-// scriptnames
+// * -a option, absolute path
+// * ~/ expandPath
+// :scriptnames
