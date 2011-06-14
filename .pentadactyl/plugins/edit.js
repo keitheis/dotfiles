@@ -88,10 +88,10 @@ let it = [];
 function cpt(context, args) {
 	let rtp = [];
 
-	options["runtimepath"].forEach(function(item) {
-		rtp.push({path: File.expandPath(item), description: "runtimepath-" + item.split(PATH_SEP).pop()});
-		rtp.push({path: File.expandPath(item)+PATH_SEP + "plugins", description: "runtimepath-" + item.split(PATH_SEP).pop()+"-plugins"});
-		rtp.push({path: File.expandPath(item)+PATH_SEP + "colors", description: "runtimepath-" + item.split(PATH_SEP).pop()+"-colors"});
+	io.getRuntimeDirectories("").forEach(function(item) {
+		rtp.push({path: item.path, description: "runtimepath-" + item.leafName});
+		// rtp.push({path: item.path+PATH_SEP+"plugins", description: "runtimepath-" + item.leafName+"-plugins"});
+		// rtp.push({path: item.path+PATH_SEP+"colors", description: "runtimepath-" + item.leafName+"-colors"});
 	});
 
 	let places = commonFiles.concat(rtp);
@@ -105,23 +105,30 @@ function cpt(context, args) {
 	if (util.OS.isWindows)
 		absolute_pattern = /^[a-zA-Z]:[\/\\]|~/;
 
-	if (absolute_pattern.test(arg))
-		dirs.push({path:arg.match(/^(?:.*[\/\\])?/)[0], description:"Absolute Path"});
+	if (absolute_pattern.test(arg)) {
+		let dir = {path:arg, description:"Absolute Path"};
+		context.forkapply(dir.description, 0, completion, 'file', [false, dir.path]);
+		let lastSub = context.contextList[context.contextList.length - 1];
+		lastSub.title[0] = arg.match(/^(?:.*[\/\\])?/)[0];
+	} else {
+		dirs.forEach(function(dir, idx) {
+			let aFile = new File(dir.path+PATH_SEP+arg);
+			if (aFile.exists() && aFile.isDirectory() && (arg === "" || File.expandPath(arg[arg.length -1]) === File.expandPath(PATH_SEP))) {
+				context.forkapply(dir.description, 0, completion, 'file', [false, aFile.path+PATH_SEP]);
+				let lastSub = context.contextList[context.contextList.length - 1];
+				lastSub.title[0] = aFile.path+PATH_SEP;
+				lastSub.filter = "";
+				lastSub.offset = arg.length + context.offset;
 
-	dirs.forEach(function(dir, idx) {
-		if (idx == dirs.length - 1 && absolute_pattern.test(arg)) {
-			context.forkapply(dir.description, 0, completion, 'file', [false, dir.path]);
-			let lastSub = context.contextList[context.contextList.length - 1];
-			lastSub.title[0] = dir.path;
-		} else {
-			context.forkapply(dir.description, 0, completion, 'file', [false, dir.path+PATH_SEP+arg]);
-			let lastSub = context.contextList[context.contextList.length - 1];
-			lastSub.keys.text = function (item) item.path.replace(dir.path+PATH_SEP, ""); // TODO: /dir.path+PATH_SEP$/
-			lastSub.title[0] = dir.path + PATH_SEP;
-			lastSub.filter = arg;
-			lastSub.offset = context.offset;
-		}
-	});
+			} else {
+				context.forkapply(dir.description, 0, completion, 'file', [false, aFile.path]);
+				let lastSub = context.contextList[context.contextList.length - 1];
+				lastSub.title[0] = aFile.parent.path + PATH_SEP;
+				lastSub.filter = aFile.leafName;
+				lastSub.offset = arg.length - aFile.leafName.length+context.offset;
+			}
+		});
+	}
 
 	context.title = ["Shortcuts", "Description"];
 	context.keys = {
@@ -289,10 +296,7 @@ group.commands.add(["edi[t]", "ei"],
 		argCount: "?",
 		bang: true,
 		completer: function (context, args) { // TODO: expandPath
-			if (args.length <=1)
 				cpt(context, args);
-			else
-				context.completions = [];
 		},
 		literal: 0
 	}
