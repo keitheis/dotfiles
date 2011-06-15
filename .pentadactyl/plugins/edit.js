@@ -69,7 +69,9 @@ const COMMON_FILES = [
 	{path: services.directory.get("PrefF", Ci.nsIFile).path, description: "Preferences"},
 	{path: services.directory.get("ProfD", Ci.nsIFile).path+PATH_SEP+"user.js", description: "User Preferences"},
 	{path: services.directory.get("UChrm", Ci.nsIFile).path+PATH_SEP+"userChrome.css", description: "CSS for the UI chrome of the Mozilla application"},
-	{path: services.directory.get("UChrm", Ci.nsIFile).path+PATH_SEP+"userContent.css", description: "CSS for content inside windows"}
+	{path: services.directory.get("UChrm", Ci.nsIFile).path+PATH_SEP+"userContent.css", description: "CSS for content inside windows"},
+	{path: services.directory.get("UChrm", Ci.nsIFile).path+PATH_SEP+"userChrome.js", description: "JS for the UI chrome of the Mozilla application"},
+	{path: services.directory.get("UChrm", Ci.nsIFile).path+PATH_SEP+"userContent.js", description: "JS for content inside windows"}
 ];
 
 let rcfile = getRCFile();
@@ -397,3 +399,5 @@ options.add(
 // * -a option, absolute path
 // * ~/ expandPath
 // :scriptnames
+// chrome list, chrome protocol
+// 转换本地 jar/xpi 链接
