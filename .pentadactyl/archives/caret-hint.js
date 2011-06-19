@@ -250,7 +250,9 @@ let CH = {
 
     function moveCaret (elem, head, select) {
       let doc = elem.ownerDocument;
-      let win = new XPCNativeWrapper(window.content.window);
+      let win = new XPCNativeWrapper(doc.defaultView);
+      win.focus();
+      CH.win = win;
       let sel =  win.getSelection();
       let r = doc.createRange();
 
@@ -282,10 +284,11 @@ let CH = {
 
     }
   },
+  
+  win: null,
 
   swapCaret: function () {
-      let win = new XPCNativeWrapper(window.content.window);
-      let s = win.getSelection();
+      let s = CH.win.getSelection();
 
       if (s.rangeCount <= 0)
         return false;
