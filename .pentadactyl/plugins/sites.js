@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Wed 18 May 2011 12:21:51 PM CST
-// @Last Change: Thu 23 Jun 2011 02:04:42 AM CST
-// @Revision:    118
+// @Last Change: Thu 23 Jun 2011 12:26:42 PM CST
+// @Revision:    120
 // @Description:
 // @Usage:
 // @TODO:
@@ -28,13 +28,13 @@ let Fixcontenteditable = function (doc) {
 						e.currentTarget.click();
 					}, false);
 		});
-		if (!thisObje.hasFocus()) {
+		if (typeof thisObje.selectionStart === "undefined") {
 			thisObje.setAttribute("originalcontenteditable", thisObje.getAttribute("contenteditable"));
 			thisObje.removeAttribute("contenteditable");
 		}
 	}
-};
 
+};
 group.autocmd.add(["DOMLoad"], "http://tieba.baidu.com/f?*,g.mozest.com", function () {
 		let doc = arguments[0].doc.valueOf();
 		Fixcontenteditable(doc);
