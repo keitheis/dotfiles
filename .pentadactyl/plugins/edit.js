@@ -19,7 +19,7 @@ var INFO =
         <description>
             <p>Open file or folder with associated program. When
 			[!] is provided, open file or folder in new tab. When [path]
-			is empty, open pentadactyl rc file. edit.js also can open jar
+			is empty, open pentadactyl rc file. edit.js can also open jar
 			package in browser or archiver.
         </p>
         </description>
@@ -127,25 +127,27 @@ function cpt(context, args) {
 
 	if (absolute_pattern.test(arg)) {
 		let dir = {path:arg, description:"Absolute Path"};
-		context.forkapply(dir.description, 0, completion, 'file', [false, dir.path]);
-		let lastSub = context.contextList[context.contextList.length - 1];
-		lastSub.title[0] = arg.match(/^(?:.*[\/\\])?/)[0];
+		context.fork(dir.description, 0, this, function (context) {
+				completion.file(context, false, dir.path);
+				context.title[0] = arg.match(/^(?:.*[\/\\])?/)[0];
+		});
 	} else {
 		dirs.forEach(function(dir, idx) {
 			let aFile = new File(dir.path+PATH_SEP+arg);
 			if (aFile.exists() && aFile.isDirectory() && (arg === "" || File.expandPath(arg[arg.length -1]) === File.expandPath(PATH_SEP))) {
-				context.forkapply(dir.description, 0, completion, 'file', [false, aFile.path+PATH_SEP]);
-				let lastSub = context.contextList[context.contextList.length - 1];
-				lastSub.title[0] = aFile.path+PATH_SEP;
-				lastSub.filter = "";
-				lastSub.offset = arg.length + context.offset;
-
+				context.fork(dir.description, 0, this, function (context) {
+						completion.file(context, false, aFile.path+PATH_SEP);
+						context.title[0] = aFile.path+PATH_SEP;
+						context.filter = "";
+						context.offset = arg.length + context.offset;
+				});
 			} else {
-				context.forkapply(dir.description, 0, completion, 'file', [false, aFile.path]);
-				let lastSub = context.contextList[context.contextList.length - 1];
-				lastSub.title[0] = aFile.parent.path + PATH_SEP;
-				lastSub.filter = aFile.leafName;
-				lastSub.offset = arg.length - aFile.leafName.length+context.offset;
+				context.fork(dir.description, 0, this, function (context) {
+						completion.file(context, false, aFile.path);
+						context.title[0] = aFile.parent.path + PATH_SEP;
+						context.filter = aFile.leafName;
+						context.offset = arg.length - aFile.leafName.length+context.offset;
+				});
 			}
 		});
 	}
@@ -177,7 +179,7 @@ group.commands.add(["edi[t]", "ei"],
 			path = args[0];
 
 		if (commandline.completionList._selIndex >= 0) {
-			path = it.items[commandline.completionList._selIndex].path;
+			path = it.items[commandline.completionList._selIndex].path; // FIXME: dirty hack
 			create = true;
 		} else {
 			if (typeof it.items === "undefined") // 未弹出自动补全窗口
@@ -192,7 +194,7 @@ group.commands.add(["edi[t]", "ei"],
 					path = it.items[0].path;
 			}
 		}
-		// let absolute_pattern = /^\//;
+
 		let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
 		if (util.OS.isWindows)
 			absolute_pattern = /^[a-zA-Z]:[\/\\]|~/;
@@ -396,9 +398,10 @@ options.add(
 	{
 		validator: function() true,
 		completer: function(context, args) {
-			context.forkapply("oped", 0, completion, 'file', [false, args[0]]);
-			// let lastSub = context.contextList[context.contextList.length - 1];
-			// lastSub.offset = args[0].length + context.offset;
+			context.fork("oped", 0, this, function (context) {
+					completion.file(context, false, args[0]);
+			});
+			// context.forkapply("oped", 0, completion, 'file', [false, args[0]]);
 
 			context.title = ["editor", "description"];
 			context.completions = editors;
