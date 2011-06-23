@@ -1,3 +1,5 @@
+// dactyl.assert(!("LOADED_EDIT_JS" in userContext), (new Error).fileName + " has already been loaded!");
+// userContext.LOADED_EDIT_JS = true;
 "use strict";
 XML.ignoreWhitespace = XML.prettyPrinting = false;
 var INFO =
@@ -55,7 +57,6 @@ function getRCFile() {
 }
 
 const PATH_SEP = File.PATH_SEP;
-// const PATH_SEP = "/";
 
 const COMMON_DIRS = [
 	{path: services.directory.get("UChrm", Ci.nsIFile).path, description: "User Chrome Directory"},
@@ -103,6 +104,23 @@ function cpt(context, args) {
 	if (args.length == 1)
 		arg = args[0];
 
+	// :scriptnames
+	context.fork("scriptnames", 0, this, function (context) {
+		context.title= ["scriptnames", "Basename"];
+		let completions = [];
+		context.compare = null;
+		io._scriptNames.forEach(function(filename) {
+				completions.push({filename:filename, basename:(new File(filename)).leafName});
+		});
+		context.completions = completions;
+		context.keys = {text: 'filename', description:'basename',path: 'filename'};
+		context.filters = [];
+		context.filters.push(function (item) {
+				// FIXME: PATH_SEP
+				return File.expandPath(item.item.filename).toLowerCase().indexOf(File.expandPath(arg).toLowerCase()) >= 0;
+		});
+	});
+
 	let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
 	if (util.OS.isWindows)
 		absolute_pattern = /^[a-zA-Z]:[\/\\]|~/;
@@ -142,7 +160,8 @@ function cpt(context, args) {
 	context.generate = function () places;
 	context.compare = null;
 	context.filters.push(function (item) {
-		return item.item.path.toLowerCase().indexOf(arg.toLowerCase()) >= 0 || File.expandPath((item.item.description)).toLowerCase().indexOf(arg.toLowerCase()) >= 0;
+		// FIXME: item.item, item.item.description
+		return File.expandPath(item.item.path).toLowerCase().indexOf(File.expandPath(arg).toLowerCase()) >= 0 || item.item.description.toLowerCase().indexOf(arg.toLowerCase()) >= 0;
 	});
 	it = context.allItems;
 }
@@ -398,6 +417,12 @@ options.add(
 
 // * -a option, absolute path
 // * ~/ expandPath
-// :scriptnames
+// * :scriptnames
 // chrome list, chrome protocol
 // 转换本地 jar/xpi 链接
+// opfs opds
+// 使用绝对路径时，无法用部分文件名打开 :ei /tmp/back.ht，自动补全显示且有结果的情况下。
+// 考虑自动补全是否打开
+// chrome://
+// res://
+// 'wildcase'
