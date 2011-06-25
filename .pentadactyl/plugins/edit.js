@@ -79,75 +79,74 @@ function isAbsolutePath(path) {
 
 function getFiles () {
 	let _files = [];
-	for (let [path, description] in Iterator(options["open-files"])) {
-		let _item = {path: path, description: description};
-		if (VALID_CONSTANTS_FILES.indexOf(path) >= 0) {
-			switch (path) {
-				case "RC" :
-				_item.path = getRCFile();
-				break;
+	options["open-files"].forEach(function (path) {
+			let _item = {path: path};
+			if (VALID_CONSTANTS_FILES.indexOf(path) >= 0) {
+				switch (path) {
+					case "RC" :
+					_item.path = getRCFile();
+					break;
 
-				default :
-				_item.path = services.directory.get(path, Ci.nsIFile).path;
-				break;
+					default :
+					_item.path = services.directory.get(path, Ci.nsIFile).path;
+					break;
+				}
+				_files.push(_item);
+				return;
+			}
+			if (!isAbsolutePath(path)) {
+				let DIR = path.split(/\\|\//)[0];
+				if (VALID_CONSTANTS_DIRS.indexOf(DIR) < 0) {
+					window.alert("不存在的常量: " + DIR);
+					return;
+				}
+
+				switch (DIR) {
+					case "RUNTIMEPATH":
+					io.getRuntimeDirectories("").forEach(function(item) {
+							_files.push({path: item.path + path.slice(DIR.length)});
+					});
+					return;
+					break;
+
+					default:
+					_item.path = services.directory.get(DIR, Ci.nsIFile).path + path.slice(DIR.length);
+					break;
+				}
 			}
 			_files.push(_item);
-			continue;
-		}
-		if (!isAbsolutePath(path)) {
-			let DIR = path.split(/\\|\//)[0];
-			if (VALID_CONSTANTS_DIRS.indexOf(DIR) < 0) {
-				window.alert("不存在的常量: " + DIR);
-				continue;
-			}
-
-			switch (DIR) {
-				case "RUNTIMEPATH":
-				io.getRuntimeDirectories("").forEach(function(item) {
-						_files.push({path: item.path + path.slice(DIR.length), description: "runtimepath-" + item.leafName});
-				});
-				continue;
-				break;
-
-				default:
-				_item.path = services.directory.get(DIR, Ci.nsIFile).path + path.slice(DIR.length);
-				break;
-			}
-		}
-		_files.push(_item);
-	}
-	_files.push({path: "------------------------------------------------------------------------------------------------------------------------", description: "我是欢乐的分割线------------------------------------------------------------------------------------------------------------------------"});
+	});
 	return _files;
 }
 
 function getDirs() {
 	let _dirs = [];
-	for (let [path, description] in Iterator(options["open-dirs"])) {
-		if (path === "SCRIPTNAMES")
-			continue;
-		let _item = {path: path, description: description};
-		if (!isAbsolutePath(path)) {
-			let DIR = path.split(/\\|\//)[0] || path;
-			if (VALID_CONSTANTS_DIRS.indexOf(DIR) < 0) {
-				dactyl.echoerr("不存在的常量");
-				continue;
-			}
+	options["open-dirs"].forEach(function (path) {
+			if (path === "SCRIPTNAMES")
+				return;
+			let _item = {path: path};
+			if (!isAbsolutePath(path)) {
+				let DIR = path.split(/\\|\//)[0] || path;
+				if (VALID_CONSTANTS_DIRS.indexOf(DIR) < 0) {
+					dactyl.echoerr("不存在的常量");
+					return;
+				}
 
-			switch (DIR) {
-				case "RUNTIMEPATH":
-				io.getRuntimeDirectories("").forEach(function(item) {
-						_dirs.push({path: item.path + path.slice(DIR.length), description: "runtimepath-" + item.leafName});
-				});
-				continue;
-				break;
+				switch (DIR) {
+					case "RUNTIMEPATH":
+					io.getRuntimeDirectories("").forEach(function(item) {
+							_dirs.push({path: item.path + path.slice(DIR.length)});
+					});
+					return;
+					break;
 
-				default:
-				_item.path = services.directory.get(DIR, Ci.nsIFile).path + path.slice(DIR.length);
-				break;
+					default:
+					_item.path = services.directory.get(DIR, Ci.nsIFile).path + path.slice(DIR.length);
+					break;
+				}
 			}
-		}
-		_dirs.push(_item);
-	}
+			_dirs.push(_item);
+	});
 
 	return _dirs;
 }
@@ -165,9 +164,9 @@ function cpt(context, args) {
 		arg = args[0];
 
 	// :scriptnames
-	if ("SCRIPTNAMES" in options["open-dirs"]) {
+	if (options["open-dirs"].indexOf("SCRIPTNAMES") >= 0) {
 		context.fork("scriptnames", 0, this, function (context) {
-				context.title= ["scriptnames", options["open-dirs"].SCRIPTNAMES];
+				context.title= ["scriptnames", "basename"];
 				let completions = [];
 				context.compare = null;
 				io._scriptNames.forEach(function(filename) {
@@ -189,7 +188,7 @@ function cpt(context, args) {
 
 	if (absolute_pattern.test(arg)) {
 		let dir = {path:arg, description:"Absolute Path"};
-		context.fork(dir.description, 0, this, function (context) {
+		context.fork(dir.path, 0, this, function (context) {
 				completion.file(context, false, dir.path);
 				context.title[0] = arg.match(/^(?:.*[\/\\])?/)[0];
 		});
@@ -197,14 +196,14 @@ function cpt(context, args) {
 		dirs.forEach(function(dir, idx) {
 			let aFile = new File(dir.path+PATH_SEP+arg);
 			if (aFile.exists() && aFile.isDirectory() && (arg === "" || File.expandPath(arg[arg.length -1]) === File.expandPath(PATH_SEP))) {
-				context.fork(dir.description, 0, this, function (context) {
+				context.fork(dir.path, 0, this, function (context) {
 						completion.file(context, false, aFile.path+PATH_SEP);
 						context.title[0] = aFile.path+PATH_SEP;
 						context.filter = "";
 						context.offset = arg.length + context.offset;
 				});
 			} else {
-				context.fork(dir.description, 0, this, function (context) {
+				context.fork(dir.path, 0, this, function (context) {
 						completion.file(context, false, aFile.path);
 						context.title[0] = aFile.parent.path + PATH_SEP;
 						context.filter = aFile.leafName;
@@ -214,18 +213,18 @@ function cpt(context, args) {
 		});
 	}
 
-	context.title = ["Shortcuts", "Description"];
+	context.title = ["Shortcuts", "basename"];
 	context.keys = {
 		text: "path",
-		description: "description",
+		description: function (item) (new File(item.path)).leafName,
 		path: function (item) item.path
 	};
 	context.filters = [];
 	context.generate = function () places;
 	context.compare = null;
 	context.filters.push(function (item) {
-		// FIXME: item.item, item.item.description
-		return File.expandPath(item.item.path).toLowerCase().indexOf(File.expandPath(arg).toLowerCase()) >= 0 || item.item.description.toLowerCase().indexOf(arg.toLowerCase()) >= 0;
+		// FIXME: item.item
+		return File.expandPath(item.item.path).toLowerCase().indexOf(File.expandPath(arg).toLowerCase()) >= 0;
 	});
 	it = context.allItems;
 }
@@ -388,14 +387,8 @@ group.commands.add(["edi[t]", "ei"],
 options.add( // TODO: completer, validator
 	["open-files", "opfs"],
 	"Common File lists",
-	"stringmap",
-	"RC:RC FILE," +
-	"PrefF:Preferences," +
-	"ProfD/user.js:User Preferences," +
-	"UChrm/userchrome.js:CSS for the UI chrome of the Mozilla application," +
-	"UChrm/userContent.js:CSS for content inside windows," +
-	"UChrm/userChrome.js:JS for the UI chrome of the Mozilla application," +
-	"UChrm/userContent.js:JS for content inside windows",
+	"stringlist",
+	"RC,PrefF,ProfD/user.js,UChrm/userchrome.js,UChrm/userContent.js,UChrm/userChrome.js,UChrm/userContent.js",
 	{
 
 	}
@@ -404,14 +397,8 @@ options.add( // TODO: completer, validator
 options.add( // TODO: completer, validator
 	["open-dirs", "opds"],
 	"Common Directory lists",
-	"stringmap",
-	"UChrm:User Chrome Directory," +
-	"ProfD:User Profile Directory," +
-	"CurProcD:Installation (usually)," +
-	"DefProfRt:User Directory," +
-	"Desk:Desktop Directory," +
-	"RUNTIMEPATH:runtimepath," +
-	"SCRIPTNAMES:scriptnames", // virtual directory
+	"stringlist",
+	"UChrm,ProfD,CurProcD,DefProfRt,Desk,RUNTIMEPATH,SCRIPTNAMES", // SCRIPTNAMES: virtual directory
 	{
 
 	}
