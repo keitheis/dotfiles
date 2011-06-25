@@ -2,35 +2,6 @@
 // userContext.LOADED_EDIT_JS = true;
 "use strict";
 XML.ignoreWhitespace = XML.prettyPrinting = false;
-var INFO =
-<plugin name="edit" version="0.1.2"
-        href="https://github.com/grassofhust/dotfiles/blob/master/.pentadactyl/plugins/edit.js"
-        summary="Open file or directory quickly."
-        xmlns={NS}>
-	<info lang="zh-CN" summary="快速打开文件或者目录！"/>
-	<info lang="en-US" summary="Open file or directory quickly!"/>
-    <author email="frederick.zou@gmail.com">Yang Zou</author>
-    <license href="http://opensource.org/licenses/mit-license.php">MIT</license>
-    <project name="Pentadactyl" min-version="1.0"/>
-    <p lang="en-US">
-		Open file or folder quickly, has auto completion support.
-    </p>
-    <p lang="zh-CN">
-		快速打开文件或者目录，提供自动补全支持！
-    </p>
-    <item>
-        <tags>:edit :ei</tags>
-        <spec>:edi[t]! [path]</spec>
-        <description>
-            <p>Open file or folder with associated program. When
-			[!] is provided, open file or folder in new tab. When [path]
-			is empty, open pentadactyl rc file. edit.js can also open jar
-			package in browser or archiver.
-        </p>
-        </description>
-    </item>
-</plugin>;
-
 function getRCFile() {
 	// stolen from content/dactyl.js
 	let init = services.environment.get(config.idName + "_INIT");
@@ -128,7 +99,7 @@ function getDirs() {
 			if (!isAbsolutePath(path)) {
 				let DIR = path.split(/\\|\//)[0] || path;
 				if (VALID_CONSTANTS_DIRS.indexOf(DIR) < 0) {
-					dactyl.echoerr("不存在的常量");
+					window.alert("不存在的常量: " + DIR);
 					return;
 				}
 
@@ -156,6 +127,7 @@ const PATH_SEP = File.PATH_SEP;
 let it = [];
 
 function cpt(context, args) {
+	let offset = context.offset;
 	let dirs = getDirs();
 	let places = getFiles().concat(dirs);
 
@@ -166,14 +138,14 @@ function cpt(context, args) {
 	// :scriptnames
 	if (options["open-dirs"].indexOf("SCRIPTNAMES") >= 0) {
 		context.fork("scriptnames", 0, this, function (context) {
-				context.title= ["scriptnames", "basename"];
+				context.title= ["scriptnames", "path"];
 				let completions = [];
 				context.compare = null;
 				io._scriptNames.forEach(function(filename) {
 						completions.push({filename:filename, basename:(new File(filename)).leafName});
 				});
 				context.completions = completions;
-				context.keys = {text: 'filename', description:'basename',path: 'filename'};
+				context.keys = {text: 'basename', description:'filename',path: 'filename'};
 				context.filters = [];
 				context.filters.push(function (item) {
 						// FIXME: PATH_SEP
@@ -182,11 +154,7 @@ function cpt(context, args) {
 		});
 }
 
-	let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
-	if (util.OS.isWindows)
-		absolute_pattern = /^[a-zA-Z]:[\/\\]|~/;
-
-	if (absolute_pattern.test(arg)) {
+	if (isAbsolutePath(arg)) {
 		let dir = {path:arg, description:"Absolute Path"};
 		context.fork(dir.path, 0, this, function (context) {
 				completion.file(context, false, dir.path);
@@ -207,25 +175,25 @@ function cpt(context, args) {
 						completion.file(context, false, aFile.path);
 						context.title[0] = aFile.parent.path + PATH_SEP;
 						context.filter = aFile.leafName;
-						context.offset = arg.length - aFile.leafName.length+context.offset;
+						context.offset = offset + arg.length - aFile.leafName.length;
 				});
 			}
 		});
 	}
 
-	context.title = ["Shortcuts", "basename"];
+	context.title = ["Shortcuts", "path"];
 	context.keys = {
-		text: "path",
-		description: function (item) (new File(item.path)).leafName,
+		text: function (item) (new File(item.path)).leafName,
+		description: "path",
 		path: function (item) item.path
 	};
-	context.filters = [];
+	// context.filters = [];
 	context.generate = function () places;
 	context.compare = null;
-	context.filters.push(function (item) {
-		// FIXME: item.item
-		return File.expandPath(item.item.path).toLowerCase().indexOf(File.expandPath(arg).toLowerCase()) >= 0;
-	});
+	// context.filters.push(function (item) {
+		// // FIXME: item.item
+		// return File.expandPath(item.item.path).toLowerCase().indexOf(File.expandPath(arg).toLowerCase()) >= 0;
+	// });
 	it = context.allItems;
 }
 
@@ -235,7 +203,7 @@ group.commands.add(["edi[t]", "ei"],
 		let create = false;
 		let path = "";
 		if (args.length == 0) {
-			path = commonFiles[0]["path"];
+			path = getRCFile();
 		} else
 			path = args[0];
 
@@ -256,11 +224,7 @@ group.commands.add(["edi[t]", "ei"],
 			}
 		}
 
-		let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
-		if (util.OS.isWindows)
-			absolute_pattern = /^[a-zA-Z]:[\/\\]|~/;
-
-		if (absolute_pattern.test(args[0]))
+		if (isAbsolutePath(args[0]))
 			path = args[0];
 
 		path = File.expandPath(path);
@@ -384,23 +348,79 @@ group.commands.add(["edi[t]", "ei"],
 	}
 );
 
+let FileCpts =  
+[
+	['RC', 'rc file: ' + getRCFile()],
+	['PrefF', 'PrefF: ' + services.directory.get("PrefF", Ci.nsIFile).path]
+];
+
 options.add( // TODO: completer, validator
 	["open-files", "opfs"],
-	"Common File lists",
+	"Common files",
 	"stringlist",
 	"RC,PrefF,ProfD/user.js,UChrm/userchrome.js,UChrm/userContent.js,UChrm/userChrome.js,UChrm/userContent.js",
 	{
-
+		completer: function (context) {
+			if (isAbsolutePath(context.filter))
+				completion.file(context, false, context.filter);
+			else {
+				context.process[1] = function(item, text) {
+					let [description, path,] = text.split(/: /);
+					return <><b xmlns:dactyl={NS}>{path}</b><span> - {description}</span></>;
+				}
+				return FileCpts;
+			}
+		},
+		validator: function (value) true
 	}
 );
 
+let DirCpts = 
+[
+	['ProfD',			'profile directory'],
+	['DefProfRt',		'user (for example /root/.mozilla)'],
+	['UChrm',			'%profile%/chrome'],
+	['DefRt',			'%installation%/defaults'],
+	['PrfDef',			'%installation%/defaults/pref'],
+	['ProfDefNoLoc',	'%installation%/defaults/profile'],
+	['APlugns',			'%installation%/plugins'],
+	['AChrom',			'%installation%/chrome'],
+	// ['ComsD',			'%installation%/components'],
+	['CurProcD',		'installation (usually)'],
+	['Home',			'OS root (for example /root)'],
+	['TmpD',			'OS tmp (for example /tmp)'],
+	['ProfLD',			'Local Settings on windows; where the network cache and fastload files are stored'],
+	['resource:app',	'application directory in a XULRunner app'],
+	['Desk',			'Desktop directory (for example ~/Desktop on Linux, C:\Documents and Settings\username\Desktop on Windows)'],
+	// ['Progs',			'User start menu programs directory (for example C:\Documents and Settings\username\Start Menu\Programs)']
+].map(function (item) {
+	let [path, description] = item;
+	return [path, description + ": " + services.directory.get(path, Ci.nsIFile).path];
+}).concat([
+		['~', 'user home: ' + File.expandPath('~')],
+		['RUNTIMEPATH', "runtimepath: " + ":help 'runtimepath'"],
+		['SCRIPTNAMES', ':scriptnames: ' + ":help :scriptnames"],
+]);
+
 options.add( // TODO: completer, validator
 	["open-dirs", "opds"],
-	"Common Directory lists",
+	"Common directories",
 	"stringlist",
 	"UChrm,ProfD,CurProcD,DefProfRt,Desk,RUNTIMEPATH,SCRIPTNAMES", // SCRIPTNAMES: virtual directory
 	{
+		completer: function (context) {
+			if (isAbsolutePath(context.filter))
+				completion.directory(context, false, context.filter);
+			else {
+				context.process[1] = function(item, text) {
+					let [description, path,] = text.split(/: /);
+					return <><b xmlns:dactyl={NS}>{path}</b><span> - {description}</span></>;
+				}
+				return DirCpts;
+			}
+		},
 
+		validator: function (value) true
 	}
 );
 
@@ -472,21 +492,210 @@ options.add(
 
 options.add(
 	["open-suffix", "opsu"],
-	"File patterns opened by external editor.",
+	"File patterns that opened by external editor.",
 	"stringlist",
 	"_pentadactylrc,.pentadactylrc,.penta,.vim,.css,.html,.js,.txt,.ini",
 	{
 	}
 );
 
+var INFO =
+<plugin name="edit" version="0.1.2"
+        href="https://github.com/grassofhust/dotfiles/blob/master/.pentadactyl/plugins/edit.js"
+        summary="Open file or directory quickly."
+        xmlns={NS}>
+	<info lang="en-US" summary="Open file or directory quickly!"/>
+	<info lang="zh-CN" summary="快速打开文件或者目录！"/>
+    <author email="frederick.zou@gmail.com">Yang Zou</author>
+    <license href="http://opensource.org/licenses/mit-license.php">MIT</license>
+    <project name="Pentadactyl" min-version="1.0"/>
+    <p lang="en-US">
+		Open file or folder quickly, has auto completion support.
+    </p>
+    <p lang="zh-CN">
+		快速打开文件或者目录，提供自动补全支持！
+    </p>
+      <item lang="en-US">
+		  <tags>'opfs' 'open-files'</tags>
+		  <spec>'open-files' 'opfs'</spec>
+		  <type>stringlist</type>
+		  <default>RC,PrefF,ProfD/user.js,UChrm/userchrome.js,UChrm/userContent.js,UChrm/userChrome.js,UChrm/userContent.js</default>
+		  <description>
+			  <p>Common files</p>
+		  </description>
+      </item>
+      <item lang="zh-CN">
+		  <tags>'opfs' 'open-files'</tags>
+		  <spec>'open-files' 'opfs'</spec>
+		  <type>stringlist</type>
+		  <default>RC,PrefF,ProfD/user.js,UChrm/userchrome.js,UChrm/userContent.js,UChrm/userChrome.js,UChrm/userContent.js</default>
+		  <description>
+			  <p>常用文件</p>
+		  </description>
+      </item>
+
+      <item lang="en-US">
+		  <tags>'opds' 'open-dirs'</tags>
+		  <spec>'open-dirs' 'opds'</spec>
+		  <type>stringlist</type>
+		  <default>UChrm,ProfD,CurProcD,DefProfRt,Desk,RUNTIMEPATH,SCRIPTNAMES</default>
+		  <description>
+			  <p>Common directories</p>
+		  </description>
+      </item>
+      <item lang="zh-CN">
+		  <tags>'opds' 'open-dirs'</tags>
+		  <spec>'open-dirs' 'opds'</spec>
+		  <type>stringlist</type>
+		  <default>UChrm,ProfD,CurProcD,DefProfRt,Desk,RUNTIMEPATH,SCRIPTNAMES</default>
+		  <description>
+			  <p>常用目录</p>
+		  </description>
+      </item>
+
+      <item lang="en-US">
+		  <tags>'oped' 'open-editor'</tags>
+		  <spec>'open-editor' 'oped'</spec>
+		  <type>string</type>
+		  <default></default>
+		  <description>
+			  <p>External editor. Support file types : <o>opsu</o></p>
+		  </description>
+      </item>
+      <item lang="zh-CN">
+		  <tags>'oped' 'open-editor'</tags>
+		  <spec>'open-editor' 'oped'</spec>
+		  <type>string</type>
+		  <default></default>
+		  <description>
+			  <p>用指定的外部编辑器打开外部文件。支持的文件类型见：<o>opsu</o></p>
+		  </description>
+      </item>
+
+      <item lang="en-US">
+		  <tags>'opsu' 'open-suffix'</tags>
+		  <spec>'open-suffix' 'opsu'</spec>
+		  <type>stringlist</type>
+		  <default>_pentadactylrc,.pentadactylrc,.penta,.vim,.css,.html,.js,.txt,.ini</default>
+		  <description>
+			  <p>File patterns that opened by external editor.</p>
+		  </description>
+      </item>
+      <item lang="zh-CN">
+		  <tags>'opsu' 'open-suffix'</tags>
+		  <spec>'open-suffix' 'opsu'</spec>
+		  <type>stringlist</type>
+		  <default>_pentadactylrc,.pentadactylrc,.penta,.vim,.css,.html,.js,.txt,.ini</default>
+		  <description>
+			  <p>指定使用外部编辑器打开的文件后缀名列表。</p>
+		  </description>
+      </item>
+
+      <item lang="en-US">
+		  <tags>open-variables</tags>
+		  <spec>open-variables</spec>
+		  <description>
+			  <p>Files</p>
+			  <dl dt="width: 6em;">
+			  {function () {
+				let elem = <></>;
+				FileCpts.forEach(function (item) {
+					let [description, path] = item[1].split(/: /);
+					elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
+				});
+				return elem;
+				  }()}
+			  </dl>
+			  <p>Directories</p>
+			  <dl dt="width: 6em;">
+			  {function () {
+				let elem = <></>;
+				DirCpts.forEach(function (item) {
+					let [description, path] = item[1].split(/: /);
+					elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
+				});
+				let rtp = <></>;
+				io.getRuntimeDirectories("").forEach(function(item) {
+						rtp += <><p>{item.path}</p></>;
+				});
+				elem += <><dt>RUNTIMEPATH</dt><dd>{rtp}<p><o>runtimepath</o></p></dd></>;
+				return elem;
+				}()}
+			  <dt>SCRIPTNAMES</dt>      <dd><ex>:scriptnames</ex> output</dd>
+			  </dl>
+			<note><link topic="https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO#Getting_special_files">Details</link> <link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsAppDirectoryServiceDefs.h">Directories</link><link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h">More Directories</link></note>
+		  </description>
+      </item>
+      <item lang="zh-CN">
+		  <tags>open-variables</tags>
+		  <spec>open-variables</spec>
+		  <description>
+			  <p>常用文件变量</p>
+			  <dl dt="width: 6em;">
+			  {function () {
+				let elem = <></>;
+				FileCpts.forEach(function (item) {
+					let [description, path] = item[1].split(/: /);
+					elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
+				});
+				return elem;
+				  }()}
+			  </dl>
+			  <p>常用目录变量</p>
+			  <dl dt="width: 6em;">
+			  {function () {
+				let elem = <></>;
+				DirCpts.forEach(function (item) {
+					let [description, path] = item[1].split(/: /);
+					elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
+				});
+				let rtp = <></>;
+				io.getRuntimeDirectories("").forEach(function(item) {
+						rtp += <><p>{item.path}</p></>;
+				});
+				elem += <><dt>RUNTIMEPATH</dt><dd>{rtp}<p><o>runtimepath</o></p></dd></>;
+				return elem;
+				  }()}
+			  <dt>SCRIPTNAMES</dt>      <dd><ex>:scriptnames</ex> output</dd>
+			  </dl>
+			<note><link topic="https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO#Getting_special_files">详细说明</link> <link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsAppDirectoryServiceDefs.h">Directories</link><link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h">More Directories</link></note>
+		  </description>
+      </item>
+
+    <item lang="en-US">
+        <tags>:edit :ei</tags>
+			<spec>:edit<oa>!</oa> <oa>path</oa></spec>
+        <description>
+            <p>Open file or folder with associated program. When
+			<oa>!</oa> is provided, open file or folder in new tab. When <oa>path</oa>
+			is empty, open pentadactyl rc file. edit.js can also open jar
+			package in browser or archiver.
+        </p>
+        </description>
+    </item>
+    <item lang="zh-CN">
+        <tags>:edit :ei</tags>
+        <spec>:edit<oa>!</oa> <oa>path</oa></spec>
+        <description>
+            <p>使用关联程序快速打开文件或者目录，当
+			<oa>!</oa> 存在，在新标签页中打开该文件或者目录。当 <oa>path</oa>
+			为空时, 直接打开 pentadactyl 的配置文件。 edit.js 能 
+			在新标签页中打开 xpi/jar 安装包。
+        </p>
+        </description>
+    </item>
+</plugin>;
+
+
 // * -a option, absolute path
 // * ~/ expandPath
 // * :scriptnames
 // chrome list, chrome protocol
 // 转换本地 jar/xpi 链接
-// opfs opds
+// * opfs opds
 // 使用绝对路径时，无法用部分文件名打开 :ei /tmp/back.ht，自动补全显示且有结果的情况下。
 // 考虑自动补全是否打开
 // chrome://
 // res://
 // 'wildcase'
+// -b base?
