@@ -3,15 +3,20 @@
 "use strict";
 XML.ignoreWhitespace = XML.prettyPrinting = false;
 var INFO =
-<plugin name="edit" version="0.1.1"
-        href="http://dactyl.sf.net/pentadactyl/plugins#smooth-scroll-plugin"
+<plugin name="edit" version="0.1.2"
+        href="https://github.com/grassofhust/dotfiles/blob/master/.pentadactyl/plugins/edit.js"
         summary="Open file or directory quickly."
         xmlns={NS}>
+	<info lang="zh-CN" summary="快速打开文件或者目录！"/>
+	<info lang="en-US" summary="Open file or directory quickly!"/>
     <author email="frederick.zou@gmail.com">Yang Zou</author>
     <license href="http://opensource.org/licenses/mit-license.php">MIT</license>
     <project name="Pentadactyl" min-version="1.0"/>
-    <p>
+    <p lang="en-US">
 		Open file or folder quickly, has auto completion support.
+    </p>
+    <p lang="zh-CN">
+		快速打开文件或者目录，提供自动补全支持！
     </p>
     <item>
         <tags>:edit :ei</tags>
@@ -56,70 +61,127 @@ function getRCFile() {
 	return false;
 }
 
+const VALID_CONSTANTS_FILES = [
+	"RC", "PrefF"
+];
+
+const VALID_CONSTANTS_DIRS = [
+	"UChrm", "ProfD", "CurProcD",
+	"DefProfRt", "Desk", "RUNTIMEPATH"
+];
+
+function isAbsolutePath(path) {
+	let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
+	if (util.OS.isWindows)
+		absolute_pattern = /^[a-zA-Z]:[\/\\]|~/;
+	return absolute_pattern.test(path);
+}
+
+function getFiles () {
+	let _files = [];
+	for (let [path, description] in Iterator(options["open-files"])) {
+		let _item = {path: path, description: description};
+		if (VALID_CONSTANTS_FILES.indexOf(path) >= 0) {
+			switch (path) {
+				case "RC" :
+				_item.path = getRCFile();
+				break;
+
+				default :
+				_item.path = services.directory.get(path, Ci.nsIFile).path;
+				break;
+			}
+			_files.push(_item);
+			continue;
+		}
+		if (!isAbsolutePath(path)) {
+			let DIR = path.split(/\\|\//)[0];
+			if (VALID_CONSTANTS_DIRS.indexOf(DIR) < 0) {
+				window.alert("不存在的常量: " + DIR);
+				continue;
+			}
+
+			switch (DIR) {
+				case "RUNTIMEPATH":
+				io.getRuntimeDirectories("").forEach(function(item) {
+						_files.push({path: item.path + path.slice(DIR.length), description: "runtimepath-" + item.leafName});
+				});
+				continue;
+				break;
+
+				default:
+				_item.path = services.directory.get(DIR, Ci.nsIFile).path + path.slice(DIR.length);
+				break;
+			}
+		}
+		_files.push(_item);
+	}
+	_files.push({path: "------------------------------------------------------------------------------------------------------------------------", description: "我是欢乐的分割线------------------------------------------------------------------------------------------------------------------------"});
+	return _files;
+}
+
+function getDirs() {
+	let _dirs = [];
+	for (let [path, description] in Iterator(options["open-dirs"])) {
+		if (path === "SCRIPTNAMES")
+			continue;
+		let _item = {path: path, description: description};
+		if (!isAbsolutePath(path)) {
+			let DIR = path.split(/\\|\//)[0] || path;
+			if (VALID_CONSTANTS_DIRS.indexOf(DIR) < 0) {
+				dactyl.echoerr("不存在的常量");
+				continue;
+			}
+
+			switch (DIR) {
+				case "RUNTIMEPATH":
+				io.getRuntimeDirectories("").forEach(function(item) {
+						_dirs.push({path: item.path + path.slice(DIR.length), description: "runtimepath-" + item.leafName});
+				});
+				continue;
+				break;
+
+				default:
+				_item.path = services.directory.get(DIR, Ci.nsIFile).path + path.slice(DIR.length);
+				break;
+			}
+		}
+		_dirs.push(_item);
+	}
+
+	return _dirs;
+}
+
 const PATH_SEP = File.PATH_SEP;
-
-const COMMON_DIRS = [
-	{path: services.directory.get("UChrm", Ci.nsIFile).path, description: "User Chrome Directory"},
-	{path: services.directory.get("ProfD", Ci.nsIFile).path, description: "User Profile Directory"},
-	{path: services.directory.get("CurProcD", Ci.nsIFile).path, description: "Installation (usually)"},
-	{path: services.directory.get("DefProfRt", Ci.nsIFile).path, description: "User Directory"},
-	{path: services.directory.get("Desk", Ci.nsIFile).path, description: "Desktop Directory"}
-];
-
-const COMMON_FILES = [
-	{path: services.directory.get("PrefF", Ci.nsIFile).path, description: "Preferences"},
-	{path: services.directory.get("ProfD", Ci.nsIFile).path+PATH_SEP+"user.js", description: "User Preferences"},
-	{path: services.directory.get("UChrm", Ci.nsIFile).path+PATH_SEP+"userChrome.css", description: "CSS for the UI chrome of the Mozilla application"},
-	{path: services.directory.get("UChrm", Ci.nsIFile).path+PATH_SEP+"userContent.css", description: "CSS for content inside windows"},
-	{path: services.directory.get("UChrm", Ci.nsIFile).path+PATH_SEP+"userChrome.js", description: "JS for the UI chrome of the Mozilla application"},
-	{path: services.directory.get("UChrm", Ci.nsIFile).path+PATH_SEP+"userContent.js", description: "JS for content inside windows"}
-];
-
-let rcfile = getRCFile();
-let commonFiles = [];
-if (rcfile)
-	commonFiles.push({path: rcfile, description: "RC FILE"});
-COMMON_FILES.forEach(function(item) {
-	commonFiles.push(item);
-});
-COMMON_DIRS.forEach(function(item) {
-	commonFiles.push(item);
-});
 
 let it = [];
 
 function cpt(context, args) {
-	let rtp = [];
-
-	io.getRuntimeDirectories("").forEach(function(item) {
-		rtp.push({path: item.path, description: "runtimepath-" + item.leafName});
-		// rtp.push({path: item.path+PATH_SEP+"plugins", description: "runtimepath-" + item.leafName+"-plugins"});
-		// rtp.push({path: item.path+PATH_SEP+"colors", description: "runtimepath-" + item.leafName+"-colors"});
-	});
-
-	let places = commonFiles.concat(rtp);
-	let dirs = rtp.concat(COMMON_DIRS);
+	let dirs = getDirs();
+	let places = getFiles().concat(dirs);
 
 	let arg = "";
 	if (args.length == 1)
 		arg = args[0];
 
 	// :scriptnames
-	context.fork("scriptnames", 0, this, function (context) {
-		context.title= ["scriptnames", "Basename"];
-		let completions = [];
-		context.compare = null;
-		io._scriptNames.forEach(function(filename) {
-				completions.push({filename:filename, basename:(new File(filename)).leafName});
+	if ("SCRIPTNAMES" in options["open-dirs"]) {
+		context.fork("scriptnames", 0, this, function (context) {
+				context.title= ["scriptnames", options["open-dirs"].SCRIPTNAMES];
+				let completions = [];
+				context.compare = null;
+				io._scriptNames.forEach(function(filename) {
+						completions.push({filename:filename, basename:(new File(filename)).leafName});
+				});
+				context.completions = completions;
+				context.keys = {text: 'filename', description:'basename',path: 'filename'};
+				context.filters = [];
+				context.filters.push(function (item) {
+						// FIXME: PATH_SEP
+						return File.expandPath(item.item.filename).toLowerCase().indexOf(File.expandPath(arg).toLowerCase()) >= 0;
+				});
 		});
-		context.completions = completions;
-		context.keys = {text: 'filename', description:'basename',path: 'filename'};
-		context.filters = [];
-		context.filters.push(function (item) {
-				// FIXME: PATH_SEP
-				return File.expandPath(item.item.filename).toLowerCase().indexOf(File.expandPath(arg).toLowerCase()) >= 0;
-		});
-	});
+}
 
 	let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
 	if (util.OS.isWindows)
@@ -323,21 +385,33 @@ group.commands.add(["edi[t]", "ei"],
 	}
 );
 
-options.add( // TODO
+options.add( // TODO: completer, validator
 	["open-files", "opfs"],
 	"Common File lists",
 	"stringmap",
-	"",
+	"RC:RC FILE," +
+	"PrefF:Preferences," +
+	"ProfD/user.js:User Preferences," +
+	"UChrm/userchrome.js:CSS for the UI chrome of the Mozilla application," +
+	"UChrm/userContent.js:CSS for content inside windows," +
+	"UChrm/userChrome.js:JS for the UI chrome of the Mozilla application," +
+	"UChrm/userContent.js:JS for content inside windows",
 	{
 
 	}
 );
 
-options.add( // TODO
+options.add( // TODO: completer, validator
 	["open-dirs", "opds"],
 	"Common Directory lists",
 	"stringmap",
-	"",
+	"UChrm:User Chrome Directory," +
+	"ProfD:User Profile Directory," +
+	"CurProcD:Installation (usually)," +
+	"DefProfRt:User Directory," +
+	"Desk:Desktop Directory," +
+	"RUNTIMEPATH:runtimepath," +
+	"SCRIPTNAMES:scriptnames", // virtual directory
 	{
 
 	}
