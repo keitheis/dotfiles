@@ -414,7 +414,7 @@ options.add( // TODO: completer, validator
 	["open-files", "opfs"],
 	"Common files",
 	"stringlist",
-	"RC,PrefF,ProfD/user.js,UChrm/userchrome.js,UChrm/userContent.js,UChrm/userChrome.js,UChrm/userContent.js",
+	"RC,PrefF,ProfD/user.js,UChrm/userChrome.css,UChrm/userContent.css,UChrm/userChrome.js,UChrm/userContent.js",
 	{
 		completer: function (context) {
 			if (edit.isAbsolutePath(context.filter))
@@ -555,7 +555,7 @@ Open file or folder quickly, has auto completion support.
 <tags>'opfs' 'open-files'</tags>
 <spec>'open-files' 'opfs'</spec>
 <type>stringlist</type>
-<default>RC,PrefF,ProfD/user.js,UChrm/userchrome.js,UChrm/userContent.js,UChrm/userChrome.js,UChrm/userContent.js</default>
+<default>RC,PrefF,ProfD/user.js,UChrm/userChrome.css,UChrm/userContent.css,UChrm/userChrome.js,UChrm/userContent.js</default>
 <description>
 <p>Common files</p>
 </description>
@@ -564,7 +564,7 @@ Open file or folder quickly, has auto completion support.
 <tags>'opfs' 'open-files'</tags>
 <spec>'open-files' 'opfs'</spec>
 <type>stringlist</type>
-<default>RC,PrefF,ProfD/user.js,UChrm/userchrome.js,UChrm/userContent.js,UChrm/userChrome.js,UChrm/userContent.js</default>
+<default>RC,PrefF,ProfD/user.js,UChrm/userChrome.css,UChrm/userContent.css,UChrm/userChrome.js,UChrm/userContent.js</default>
 <description>
 <p>常用文件</p>
 </description>
