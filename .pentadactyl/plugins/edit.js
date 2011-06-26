@@ -73,8 +73,8 @@ let edit = {
 			['TmpD',			'OS tmp (for example /tmp)'],
 			['ProfLD',			'Local Settings on windows; where the network cache and fastload files are stored'],
 			['resource:app',	'application directory in a XULRunner app'],
-			['Desk',			'Desktop directory (for example ~/Desktop on Linux, C:\Documents and Settings\username\Desktop on Windows)'],
-			// ['Progs',			'User start menu programs directory (for example C:\Documents and Settings\username\Start Menu\Programs)']
+			['Desk',			'Desktop directory (for example ~/Desktop on Linux, C:\\Documents and Settings\\username\\Desktop on Windows)'],
+			// ['Progs',			'User start menu programs directory (for example C:\\Documents and Settings\\username\\Start Menu\\Programs)']
 	].map(function (item) {
 			let [path, description] = item;
 			return [path, description + ": " + services.directory.get(path, Ci.nsIFile).path];
