@@ -75,14 +75,14 @@ let edit = {
 			['resource:app',	'application directory in a XULRunner app'],
 			['Desk',			'Desktop directory (for example ~/Desktop on Linux, C:\Documents and Settings\username\Desktop on Windows)'],
 			// ['Progs',			'User start menu programs directory (for example C:\Documents and Settings\username\Start Menu\Programs)']
-		].map(function (item) {
-				let [path, description] = item;
-				return [path, description + ": " + services.directory.get(path, Ci.nsIFile).path];
-		}).concat([
-				['~', 'user home: ' + File.expandPath('~')],
-				['RUNTIMEPATH', "runtimepath: " + ":help 'runtimepath'"],
-				['SCRIPTNAMES', ':scriptnames: ' + ":help :scriptnames"],
-		]);
+	].map(function (item) {
+			let [path, description] = item;
+			return [path, description + ": " + services.directory.get(path, Ci.nsIFile).path];
+	}).concat([
+			['~', 'user home: ' + File.expandPath('~')],
+			['RUNTIMEPATH', "runtimepath: " + ":help 'runtimepath'"],
+			['SCRIPTNAMES', ':scriptnames: ' + ":help :scriptnames"]
+	]);
 		return edit._DirCpts;
 	},
 	get VAILD_FILES() edit._VAILD_FILES || edit._setVAILD_FILES(),
@@ -185,7 +185,7 @@ let edit = {
 		});
 
 		return _dirs;
-	},
+	}
 }
 function cpt(context, args) {
 	let offset = context.offset;
@@ -207,9 +207,8 @@ function cpt(context, args) {
 				});
 				context.completions = completions;
 				context.keys = {text: 'basename', description:'filename',path: 'filename'};
-				});
 		});
-}
+	}
 
 	if (edit.isAbsolutePath(arg)) {
 		let dir = {path:arg, description:"Absolute Path"};
@@ -219,22 +218,22 @@ function cpt(context, args) {
 		});
 	} else {
 		dirs.forEach(function(dir, idx) {
-			let aFile = new File(dir.path+PATH_SEP+arg);
-			if (aFile.exists() && aFile.isDirectory() && (arg === "" || File.expandPath(arg[arg.length -1]) === File.expandPath(PATH_SEP))) {
-				context.fork(dir.path, 0, this, function (context) {
-						completion.file(context, false, aFile.path+PATH_SEP);
-						context.title[0] = aFile.path+PATH_SEP;
-						context.filter = "";
-						context.offset = arg.length + context.offset;
-				});
-			} else {
-				context.fork(dir.path, 0, this, function (context) {
-						completion.file(context, false, aFile.path);
-						context.title[0] = aFile.parent.path + PATH_SEP;
-						context.filter = aFile.leafName;
-						context.offset = offset + arg.length - aFile.leafName.length;
-				});
-			}
+				let aFile = new File(dir.path+PATH_SEP+arg);
+				if (aFile.exists() && aFile.isDirectory() && (arg === "" || File.expandPath(arg[arg.length -1]) === File.expandPath(PATH_SEP))) {
+					context.fork(dir.path, 0, this, function (context) {
+							completion.file(context, false, aFile.path+PATH_SEP);
+							context.title[0] = aFile.path+PATH_SEP;
+							context.filter = "";
+							context.offset = arg.length + context.offset;
+					});
+				} else {
+					context.fork(dir.path, 0, this, function (context) {
+							completion.file(context, false, aFile.path);
+							context.title[0] = aFile.parent.path + PATH_SEP;
+							context.filter = aFile.leafName;
+							context.offset = offset + arg.length - aFile.leafName.length;
+					});
+				}
 		});
 	}
 
@@ -248,12 +247,12 @@ function cpt(context, args) {
 	context.generate = function () places;
 	context.compare = null;
 	context.filters.push(function (item) {
-		// FIXME: item.item
-		if (item.item.opds) {
-			return item.item.path.toLowerCase().indexOf(arg.toLowerCase()) == 0 || item.item.raw.toLowerCase().indexOf(arg.toLowerCase()) == 0;
-		} else {
-			return (new File(item.item.path)).leafName.toLowerCase().indexOf(arg.toLowerCase()) == 0;
-		}
+			// FIXME: item.item
+			if (item.item.opds) {
+				return item.item.path.toLowerCase().indexOf(arg.toLowerCase()) == 0 || item.item.raw.toLowerCase().indexOf(arg.toLowerCase()) == 0;
+			} else {
+				return (new File(item.item.path)).leafName.toLowerCase().indexOf(arg.toLowerCase()) == 0;
+			}
 	});
 	it = context.allItems;
 }
@@ -264,7 +263,10 @@ group.commands.add(["edi[t]", "ei"],
 		let create = false;
 		let path = "";
 		if (args.length == 0) {
-			path = edit.files[0]["path"];
+			if (edit.files[0])
+				path = edit.files[0]["path"];
+			else
+				path = edit.RC;
 		} else
 			path = args[0];
 
@@ -291,10 +293,10 @@ group.commands.add(["edi[t]", "ei"],
 		path = File.expandPath(path);
 
 		var localFile = Components.classes["@mozilla.org/file/local;1"].
-			createInstance(Components.interfaces.nsILocalFile);
+		createInstance(Components.interfaces.nsILocalFile);
 		let jar_pattern = /\.jar|\.xpi$/;
 		let isJar = jar_pattern.test(path);
-		
+
 
 		try {
 			localFile.initWithPath(path);
@@ -322,11 +324,11 @@ group.commands.add(["edi[t]", "ei"],
 							if (util.OS.isWindows) {
 								try {
 									var file = Components.classes["@mozilla.org/file/local;1"]
-										.createInstance(Components.interfaces.nsILocalFile);
+									.createInstance(Components.interfaces.nsILocalFile);
 									file.initWithPath(options["open-editor"]);
 
 									var process = Components.classes["@mozilla.org/process/util;1"]
-										.createInstance(Components.interfaces.nsIProcess);
+									.createInstance(Components.interfaces.nsIProcess);
 									process.init(file);
 									var args = [path];
 									process.run(false, args, args.length);
@@ -366,11 +368,11 @@ group.commands.add(["edi[t]", "ei"],
 											if (util.OS.isWindows) {
 												try {
 													var file = Components.classes["@mozilla.org/file/local;1"]
-														.createInstance(Components.interfaces.nsILocalFile);
+													.createInstance(Components.interfaces.nsILocalFile);
 													file.initWithPath(options["open-editor"]);
 
 													var process = Components.classes["@mozilla.org/process/util;1"]
-														.createInstance(Components.interfaces.nsIProcess);
+													.createInstance(Components.interfaces.nsIProcess);
 													process.init(file);
 													var args = [path];
 													process.run(false, args, args.length);
@@ -459,22 +461,22 @@ options.add( // TODO: completer, validator
 );
 
 function findEditor (string) {
-    var str = string.trimLeft();
-    var edge = false;
-    var index = 0;
-    while (!edge && index >= 0) {
-        index = str.indexOf(" ", index+1);
-        if (index >= 0) {
-            if (str[index -1] !== "\\")
-                edge = true;
-        } else
-            edge = true;
-    }
+	var str = string.trimLeft();
+	var edge = false;
+	var index = 0;
+	while (!edge && index >= 0) {
+		index = str.indexOf(" ", index+1);
+		if (index >= 0) {
+			if (str[index -1] !== "\\")
+				edge = true;
+		} else
+			edge = true;
+	}
 
-    var editor = str;
-    if (index >= 0)
-        editor = str.substring(0,index);
-    return editor;
+	var editor = str;
+	if (index >= 0)
+		editor = str.substring(0,index);
+	return editor;
 }
 
 let editors = [];
@@ -496,10 +498,10 @@ let editor = findEditor(options["editor"]);
 if (editor.length > 0) {
 	let duplicated = false;
 	editors.forEach(function(item, idx) {
-		if (item[0] === editor) {
-			editors[idx][1] = "External editor from pentadactyl 'editor' option.";
-			duplicated = true;
-		}
+			if (item[0] === editor) {
+				editors[idx][1] = "External editor from pentadactyl 'editor' option.";
+				duplicated = true;
+			}
 	})
 	if (!duplicated)
 		editors.push([editor, "External editor from pentadactyl 'editor' option."]);
@@ -535,189 +537,189 @@ options.add(
 
 var INFO =
 <plugin name="edit" version="0.1.2"
-        href="https://github.com/grassofhust/dotfiles/blob/master/.pentadactyl/plugins/edit.js"
-        summary="Open file or directory quickly."
-        xmlns={NS}>
-	<info lang="en-US" summary="Open file or directory quickly!"/>
-	<info lang="zh-CN" summary="快速打开文件或者目录！"/>
-    <author email="frederick.zou@gmail.com">Yang Zou</author>
-    <license href="http://opensource.org/licenses/mit-license.php">MIT</license>
-    <project name="Pentadactyl" min-version="1.0"/>
-    <p lang="en-US">
-		Open file or folder quickly, has auto completion support.
-    </p>
-    <p lang="zh-CN">
-		快速打开文件或者目录，提供自动补全支持！
-    </p>
-      <item lang="en-US">
-		  <tags>'opfs' 'open-files'</tags>
-		  <spec>'open-files' 'opfs'</spec>
-		  <type>stringlist</type>
-		  <default>RC,PrefF,ProfD/user.js,UChrm/userchrome.js,UChrm/userContent.js,UChrm/userChrome.js,UChrm/userContent.js</default>
-		  <description>
-			  <p>Common files</p>
-		  </description>
-      </item>
-      <item lang="zh-CN">
-		  <tags>'opfs' 'open-files'</tags>
-		  <spec>'open-files' 'opfs'</spec>
-		  <type>stringlist</type>
-		  <default>RC,PrefF,ProfD/user.js,UChrm/userchrome.js,UChrm/userContent.js,UChrm/userChrome.js,UChrm/userContent.js</default>
-		  <description>
-			  <p>常用文件</p>
-		  </description>
-      </item>
+href="https://github.com/grassofhust/dotfiles/blob/master/.pentadactyl/plugins/edit.js"
+summary="Open file or directory quickly."
+xmlns={NS}>
+<info lang="en-US" summary="Open file or directory quickly!"/>
+<info lang="zh-CN" summary="快速打开文件或者目录！"/>
+<author email="frederick.zou@gmail.com">Yang Zou</author>
+<license href="http://opensource.org/licenses/mit-license.php">MIT</license>
+<project name="Pentadactyl" min-version="1.0"/>
+<p lang="en-US">
+Open file or folder quickly, has auto completion support.
+</p>
+<p lang="zh-CN">
+快速打开文件或者目录，提供自动补全支持！
+</p>
+<item lang="en-US">
+<tags>'opfs' 'open-files'</tags>
+<spec>'open-files' 'opfs'</spec>
+<type>stringlist</type>
+<default>RC,PrefF,ProfD/user.js,UChrm/userchrome.js,UChrm/userContent.js,UChrm/userChrome.js,UChrm/userContent.js</default>
+<description>
+<p>Common files</p>
+</description>
+</item>
+<item lang="zh-CN">
+<tags>'opfs' 'open-files'</tags>
+<spec>'open-files' 'opfs'</spec>
+<type>stringlist</type>
+<default>RC,PrefF,ProfD/user.js,UChrm/userchrome.js,UChrm/userContent.js,UChrm/userChrome.js,UChrm/userContent.js</default>
+<description>
+<p>常用文件</p>
+</description>
+</item>
 
-      <item lang="en-US">
-		  <tags>'opds' 'open-dirs'</tags>
-		  <spec>'open-dirs' 'opds'</spec>
-		  <type>stringlist</type>
-		  <default>UChrm,ProfD,CurProcD,DefProfRt,Desk,RUNTIMEPATH,SCRIPTNAMES</default>
-		  <description>
-			  <p>Common directories</p>
-		  </description>
-      </item>
-      <item lang="zh-CN">
-		  <tags>'opds' 'open-dirs'</tags>
-		  <spec>'open-dirs' 'opds'</spec>
-		  <type>stringlist</type>
-		  <default>UChrm,ProfD,CurProcD,DefProfRt,Desk,RUNTIMEPATH,SCRIPTNAMES</default>
-		  <description>
-			  <p>常用目录</p>
-		  </description>
-      </item>
+<item lang="en-US">
+<tags>'opds' 'open-dirs'</tags>
+<spec>'open-dirs' 'opds'</spec>
+<type>stringlist</type>
+<default>UChrm,ProfD,CurProcD,DefProfRt,Desk,RUNTIMEPATH,SCRIPTNAMES</default>
+<description>
+<p>Common directories</p>
+</description>
+</item>
+<item lang="zh-CN">
+<tags>'opds' 'open-dirs'</tags>
+<spec>'open-dirs' 'opds'</spec>
+<type>stringlist</type>
+<default>UChrm,ProfD,CurProcD,DefProfRt,Desk,RUNTIMEPATH,SCRIPTNAMES</default>
+<description>
+<p>常用目录</p>
+</description>
+</item>
 
-      <item lang="en-US">
-		  <tags>'oped' 'open-editor'</tags>
-		  <spec>'open-editor' 'oped'</spec>
-		  <type>string</type>
-		  <default></default>
-		  <description>
-			  <p>External editor. Support file types : <o>opsu</o></p>
-		  </description>
-      </item>
-      <item lang="zh-CN">
-		  <tags>'oped' 'open-editor'</tags>
-		  <spec>'open-editor' 'oped'</spec>
-		  <type>string</type>
-		  <default></default>
-		  <description>
-			  <p>用指定的外部编辑器打开外部文件。支持的文件类型见：<o>opsu</o></p>
-		  </description>
-      </item>
+<item lang="en-US">
+<tags>'oped' 'open-editor'</tags>
+<spec>'open-editor' 'oped'</spec>
+<type>string</type>
+<default></default>
+<description>
+<p>External editor. Support file types : <o>opsu</o></p>
+</description>
+</item>
+<item lang="zh-CN">
+<tags>'oped' 'open-editor'</tags>
+<spec>'open-editor' 'oped'</spec>
+<type>string</type>
+<default></default>
+<description>
+<p>用指定的外部编辑器打开外部文件。支持的文件类型见：<o>opsu</o></p>
+</description>
+</item>
 
-      <item lang="en-US">
-		  <tags>'opsu' 'open-suffix'</tags>
-		  <spec>'open-suffix' 'opsu'</spec>
-		  <type>stringlist</type>
-		  <default>_pentadactylrc,.pentadactylrc,.penta,.vim,.css,.html,.js,.txt,.ini</default>
-		  <description>
-			  <p>File patterns that opened by external editor.</p>
-		  </description>
-      </item>
-      <item lang="zh-CN">
-		  <tags>'opsu' 'open-suffix'</tags>
-		  <spec>'open-suffix' 'opsu'</spec>
-		  <type>stringlist</type>
-		  <default>_pentadactylrc,.pentadactylrc,.penta,.vim,.css,.html,.js,.txt,.ini</default>
-		  <description>
-			  <p>指定使用外部编辑器打开的文件后缀名列表。</p>
-		  </description>
-      </item>
+<item lang="en-US">
+<tags>'opsu' 'open-suffix'</tags>
+<spec>'open-suffix' 'opsu'</spec>
+<type>stringlist</type>
+<default>_pentadactylrc,.pentadactylrc,.penta,.vim,.css,.html,.js,.txt,.ini</default>
+<description>
+<p>File patterns that opened by external editor.</p>
+</description>
+</item>
+<item lang="zh-CN">
+<tags>'opsu' 'open-suffix'</tags>
+<spec>'open-suffix' 'opsu'</spec>
+<type>stringlist</type>
+<default>_pentadactylrc,.pentadactylrc,.penta,.vim,.css,.html,.js,.txt,.ini</default>
+<description>
+<p>指定使用外部编辑器打开的文件后缀名列表。</p>
+</description>
+</item>
 
-      <item lang="en-US">
-		  <tags>open-variables</tags>
-		  <spec>open-variables</spec>
-		  <description>
-			  <p>Files</p>
-			  <dl dt="width: 6em;">
-			  {function () {
-				let elem = <></>;
-				edit.FileCpts.forEach(function (item) {
-					let [description, path] = item[1].split(/: /);
-					elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
-				});
-				return elem;
-				  }()}
-			  </dl>
-			  <p>Directories</p>
-			  <dl dt="width: 6em;">
-			  {function () {
-				let elem = <></>;
-				edit.DirCpts.forEach(function (item) {
-					let [description, path] = item[1].split(/: /);
-					elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
-				});
-				let rtp = <></>;
-				io.getRuntimeDirectories("").forEach(function(item) {
-						rtp += <><p>{item.path}</p></>;
-				});
-				elem += <><dt>RUNTIMEPATH</dt><dd>{rtp}<p><o>runtimepath</o></p></dd></>;
-				return elem;
-				}()}
-			  <dt>SCRIPTNAMES</dt>      <dd><ex>:scriptnames</ex> output</dd>
-			  </dl>
-			<note><link topic="https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO#Getting_special_files">Details</link> <link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsAppDirectoryServiceDefs.h">Directories</link><link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h">More Directories</link></note>
-		  </description>
-      </item>
-      <item lang="zh-CN">
-		  <tags>open-variables</tags>
-		  <spec>open-variables</spec>
-		  <description>
-			  <p>常用文件变量</p>
-			  <dl dt="width: 6em;">
-			  {function () {
-				let elem = <></>;
-				edit.FileCpts.forEach(function (item) {
-					let [description, path] = item[1].split(/: /);
-					elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
-				});
-				return elem;
-				  }()}
-			  </dl>
-			  <p>常用目录变量</p>
-			  <dl dt="width: 6em;">
-			  {function () {
-				let elem = <></>;
-				edit.DirCpts.forEach(function (item) {
-					let [description, path] = item[1].split(/: /);
-					elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
-				});
-				let rtp = <></>;
-				io.getRuntimeDirectories("").forEach(function(item) {
-						rtp += <><p>{item.path}</p></>;
-				});
-				elem += <><dt>RUNTIMEPATH</dt><dd>{rtp}<p><o>runtimepath</o></p></dd></>;
-				return elem;
-				  }()}
-			  <dt>SCRIPTNAMES</dt>      <dd><ex>:scriptnames</ex> output</dd>
-			  </dl>
-			<note><link topic="https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO#Getting_special_files">详细说明</link> <link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsAppDirectoryServiceDefs.h">Directories</link><link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h">More Directories</link></note>
-		  </description>
-      </item>
+<item lang="en-US">
+<tags>open-variables</tags>
+<spec>open-variables</spec>
+<description>
+<p>Files</p>
+<dl dt="width: 6em;">
+{function () {
+		let elem = <></>;
+		edit.FileCpts.forEach(function (item) {
+				let [description, path] = item[1].split(/: /);
+				elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
+		});
+		return elem;
+	}()}
+</dl>
+<p>Directories</p>
+<dl dt="width: 6em;">
+{function () {
+		let elem = <></>;
+		edit.DirCpts.forEach(function (item) {
+				let [description, path] = item[1].split(/: /);
+				elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
+		});
+		let rtp = <></>;
+		io.getRuntimeDirectories("").forEach(function(item) {
+				rtp += <><p>{item.path}</p></>;
+		});
+		elem += <><dt>RUNTIMEPATH</dt><dd>{rtp}<p><o>runtimepath</o></p></dd></>;
+		return elem;
+	}()}
+<dt>SCRIPTNAMES</dt>      <dd><ex>:scriptnames</ex> output</dd>
+</dl>
+<note><link topic="https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO#Getting_special_files">Details</link> <link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsAppDirectoryServiceDefs.h">Directories</link><link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h">More Directories</link></note>
+</description>
+</item>
+<item lang="zh-CN">
+<tags>open-variables</tags>
+<spec>open-variables</spec>
+<description>
+<p>常用文件变量</p>
+<dl dt="width: 6em;">
+{function () {
+		let elem = <></>;
+		edit.FileCpts.forEach(function (item) {
+				let [description, path] = item[1].split(/: /);
+				elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
+		});
+		return elem;
+	}()}
+</dl>
+<p>常用目录变量</p>
+<dl dt="width: 6em;">
+{function () {
+		let elem = <></>;
+		edit.DirCpts.forEach(function (item) {
+				let [description, path] = item[1].split(/: /);
+				elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
+		});
+		let rtp = <></>;
+		io.getRuntimeDirectories("").forEach(function(item) {
+				rtp += <><p>{item.path}</p></>;
+		});
+		elem += <><dt>RUNTIMEPATH</dt><dd>{rtp}<p><o>runtimepath</o></p></dd></>;
+		return elem;
+	}()}
+<dt>SCRIPTNAMES</dt>      <dd><ex>:scriptnames</ex> output</dd>
+</dl>
+<note><link topic="https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO#Getting_special_files">详细说明</link> <link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsAppDirectoryServiceDefs.h">Directories</link><link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h">More Directories</link></note>
+</description>
+</item>
 
-    <item lang="en-US">
-        <tags>:edit :ei</tags>
-			<spec>:edit<oa>!</oa> <oa>path</oa></spec>
-        <description>
-            <p>Open file or folder with associated program. When
-			<oa>!</oa> is provided, open file or folder in new tab. When <oa>path</oa>
-			is empty, open pentadactyl rc file. edit.js can also open jar
-			package in browser or archiver.
-        </p>
-        </description>
-    </item>
-    <item lang="zh-CN">
-        <tags>:edit :ei</tags>
-        <spec>:edit<oa>!</oa> <oa>path</oa></spec>
-        <description>
-            <p>使用关联程序快速打开文件或者目录，当
-			<oa>!</oa> 存在，在新标签页中打开该文件或者目录。当 <oa>path</oa>
-			为空时, 直接打开 pentadactyl 的配置文件。 edit.js 能 
-			在新标签页中打开 xpi/jar 安装包。
-        </p>
-        </description>
-    </item>
+<item lang="en-US">
+<tags>:edit :ei</tags>
+<spec>:edit<oa>!</oa> <oa>path</oa></spec>
+<description>
+<p>Open file or folder with associated program. When
+<oa>!</oa> is provided, open file or folder in new tab. When <oa>path</oa>
+is empty, open pentadactyl rc file. edit.js can also open jar
+package in browser or archiver.
+</p>
+</description>
+</item>
+<item lang="zh-CN">
+<tags>:edit :ei</tags>
+<spec>:edit<oa>!</oa> <oa>path</oa></spec>
+<description>
+<p>使用关联程序快速打开文件或者目录，当
+<oa>!</oa> 存在，在新标签页中打开该文件或者目录。当 <oa>path</oa>
+为空时, 直接打开 pentadactyl 的配置文件。 edit.js 能 
+在新标签页中打开 xpi/jar 安装包。
+</p>
+</description>
+</item>
 </plugin>;
 
 
