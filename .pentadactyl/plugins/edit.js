@@ -207,10 +207,6 @@ function cpt(context, args) {
 				});
 				context.completions = completions;
 				context.keys = {text: 'basename', description:'filename',path: 'filename'};
-				context.filters = [];
-				context.filters.push(function (item) {
-						// FIXME: PATH_SEP
-						return File.expandPath(item.item.filename).toLowerCase().indexOf(File.expandPath(arg).toLowerCase()) >= 0;
 				});
 		});
 }
