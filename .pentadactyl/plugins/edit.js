@@ -2,134 +2,195 @@
 // userContext.LOADED_EDIT_JS = true;
 "use strict";
 XML.ignoreWhitespace = XML.prettyPrinting = false;
-function getRCFile() {
-	// stolen from content/dactyl.js
-	let init = services.environment.get(config.idName + "_INIT");
-	let rcFile = io.getRCFile("~");
-
-	try {
-		if (dactyl.commandLineOptions.rcFile) {
-			let filename = dactyl.commandLineOptions.rcFile;
-			if (!/^(NONE|NORC)$/.test(filename))
-				return io.File(filename).path;
-		} else {
-			if (init)
-				; // do nth
-			else {
-				if (rcFile)
-					return rcFile.path;
-			}
-
-			if (options["exrc"] && !dactyl.commandLineOptions.rcFile) {
-				let localRCFile = io.getRCFile(io.cwd);
-				if (localRCFile && !localRCFile.equals(rcFile))
-					return localRCFile.path;
-			}
-		}
-	} finally {
-		; // do nth
-	}
-	return false;
-}
-
-const VALID_CONSTANTS_FILES = [
-	"RC", "PrefF"
-];
-
-const VALID_CONSTANTS_DIRS = [
-	"UChrm", "ProfD", "CurProcD",
-	"DefProfRt", "Desk", "RUNTIMEPATH"
-];
-
-function isAbsolutePath(path) {
-	let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
-	if (util.OS.isWindows)
-		absolute_pattern = /^[a-zA-Z]:[\/\\]|~/;
-	return absolute_pattern.test(path);
-}
-
-function getFiles () {
-	let _files = [];
-	options["open-files"].forEach(function (path) {
-			let _item = {path: path};
-			if (VALID_CONSTANTS_FILES.indexOf(path) >= 0) {
-				switch (path) {
-					case "RC" :
-					_item.path = getRCFile();
-					break;
-
-					default :
-					_item.path = services.directory.get(path, Ci.nsIFile).path;
-					break;
-				}
-				_files.push(_item);
-				return;
-			}
-			if (!isAbsolutePath(path)) {
-				let DIR = path.split(/\\|\//)[0];
-				if (VALID_CONSTANTS_DIRS.indexOf(DIR) < 0) {
-					window.alert("不存在的常量: " + DIR);
-					return;
-				}
-
-				switch (DIR) {
-					case "RUNTIMEPATH":
-					io.getRuntimeDirectories("").forEach(function(item) {
-							_files.push({path: item.path + path.slice(DIR.length)});
-					});
-					return;
-					break;
-
-					default:
-					_item.path = services.directory.get(DIR, Ci.nsIFile).path + path.slice(DIR.length);
-					break;
-				}
-			}
-			_files.push(_item);
-	});
-	return _files;
-}
-
-function getDirs() {
-	let _dirs = [];
-	options["open-dirs"].forEach(function (path) {
-			if (path === "SCRIPTNAMES")
-				return;
-			let _item = {path: path};
-			if (!isAbsolutePath(path)) {
-				let DIR = path.split(/\\|\//)[0] || path;
-				if (VALID_CONSTANTS_DIRS.indexOf(DIR) < 0) {
-					window.alert("不存在的常量: " + DIR);
-					return;
-				}
-
-				switch (DIR) {
-					case "RUNTIMEPATH":
-					io.getRuntimeDirectories("").forEach(function(item) {
-							_dirs.push({path: item.path + path.slice(DIR.length)});
-					});
-					return;
-					break;
-
-					default:
-					_item.path = services.directory.get(DIR, Ci.nsIFile).path + path.slice(DIR.length);
-					break;
-				}
-			}
-			_dirs.push(_item);
-	});
-
-	return _dirs;
-}
 
 const PATH_SEP = File.PATH_SEP;
-
 let it = [];
 
+let edit = {
+	get RC() edit._RC || edit._setRC(),
+	_setRC: function () {
+		// stolen from content/dactyl.js
+		let init = services.environment.get(config.idName + "_INIT");
+		let rcFile = io.getRCFile("~");
+
+		try {
+			if (dactyl.commandLineOptions.rcFile) {
+				let filename = dactyl.commandLineOptions.rcFile;
+				if (!/^(NONE|NORC)$/.test(filename)) {
+					edit._RC = io.File(filename).path;
+					return edit._RC;
+				}
+			} else {
+				if (init)
+					; // do nth
+				else {
+					if (rcFile) {
+						edit._RC =  rcFile.path;
+						return edit._RC;
+					}
+				}
+
+				if (options["exrc"] && !dactyl.commandLineOptions.rcFile) {
+					let localRCFile = io.getRCFile(io.cwd);
+					if (localRCFile && !localRCFile.equals(rcFile)) {
+						edit._RC = localRCFile.path;
+						return edit._RC;
+					}
+				}
+			}
+		} finally {
+			; // do nth
+		}
+		let rc_name = ".pentadactylrc";
+		if (util.OS.isWindows)
+			rc_name = "_pentadactylrc";
+		edit._RC = services.directory.get("Home", Ci.nsIFile).path + File.PATH_SEP + rc_name;
+		return edit._RC;
+	},
+	get FileCpts() edit._FileCpts || edit._setFileCpts(),
+	_setFileCpts : function () {
+		edit._FileCpts = [
+			['RC', 'rc file: ' + edit.RC],
+			['PrefF', 'PrefF: ' + services.directory.get("PrefF", Ci.nsIFile).path]
+		];
+		return edit._FileCpts;
+	},
+	get DirCpts() edit._DirCpts || edit._setDirCpts(),
+	_setDirCpts: function() {
+		edit._DirCpts = 
+		[
+			['ProfD',			'profile directory'],
+			['DefProfRt',		'user (for example /root/.mozilla)'],
+			['UChrm',			'%profile%/chrome'],
+			['DefRt',			'%installation%/defaults'],
+			['PrfDef',			'%installation%/defaults/pref'],
+			['ProfDefNoLoc',	'%installation%/defaults/profile'],
+			['APlugns',			'%installation%/plugins'],
+			['AChrom',			'%installation%/chrome'],
+			// ['ComsD',			'%installation%/components'],
+			['CurProcD',		'installation (usually)'],
+			['Home',			'OS root (for example /root)'],
+			['TmpD',			'OS tmp (for example /tmp)'],
+			['ProfLD',			'Local Settings on windows; where the network cache and fastload files are stored'],
+			['resource:app',	'application directory in a XULRunner app'],
+			['Desk',			'Desktop directory (for example ~/Desktop on Linux, C:\Documents and Settings\username\Desktop on Windows)'],
+			// ['Progs',			'User start menu programs directory (for example C:\Documents and Settings\username\Start Menu\Programs)']
+		].map(function (item) {
+				let [path, description] = item;
+				return [path, description + ": " + services.directory.get(path, Ci.nsIFile).path];
+		}).concat([
+				['~', 'user home: ' + File.expandPath('~')],
+				['RUNTIMEPATH', "runtimepath: " + ":help 'runtimepath'"],
+				['SCRIPTNAMES', ':scriptnames: ' + ":help :scriptnames"],
+		]);
+		return edit._DirCpts;
+	},
+	get VAILD_FILES() edit._VAILD_FILES || edit._setVAILD_FILES(),
+	_setVAILD_FILES: function () {
+		edit._VAILD_FILES = edit.FileCpts.map(function (item) {
+				return item[0];
+		});
+		return edit._VAILD_FILES;
+	},
+	get VAILD_DIRS() edit._VAILD_DIRS || edit._setVAILD_DIRS(),
+	_setVAILD_DIRS: function () {
+		edit._VAILD_DIRS = edit.DirCpts.map(function (item) {
+				return item[0];
+		});
+		return edit._VAILD_DIRS;
+	},
+	isAbsolutePath: function(path) {
+		let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
+		if (util.OS.isWindows)
+			absolute_pattern = /^[a-zA-Z]:[\/\\]|~/;
+		return absolute_pattern.test(path);
+	},
+
+	get files() edit._files,
+	set files(value) {
+		edit._files = value;
+	},
+	getFiles: function(value) {
+		let _files = [];
+		value.forEach(function (path) {
+				let _item = {path: path};
+				if (edit.VAILD_FILES.indexOf(path) >= 0) {
+					switch (path) {
+						case "RC" :
+						_item.path = edit.RC;
+						break;
+
+						default :
+						_item.path = services.directory.get(path, Ci.nsIFile).path;
+						break;
+					}
+					_files.push(_item);
+					return;
+				}
+				if (!edit.isAbsolutePath(path)) {
+					let DIR = path.split(/\\|\//)[0];
+					if (edit.VAILD_DIRS.indexOf(DIR) < 0) {
+						window.alert("不存在的常量: " + DIR);
+						return;
+					}
+
+					switch (DIR) {
+						case "RUNTIMEPATH":
+						io.getRuntimeDirectories("").forEach(function(item) {
+								_files.push({path: item.path + path.slice(DIR.length)});
+						});
+						return;
+						break;
+
+						default:
+						_item.path = services.directory.get(DIR, Ci.nsIFile).path + path.slice(DIR.length);
+						break;
+					}
+				}
+				_files.push(_item);
+		});
+		return _files;
+	},
+	get dirs() edit._dirs,
+	set dirs(value) {
+		edit._dirs = value;
+	},
+	getDirs: function (value) {
+		let _dirs = [];
+		value.forEach(function (path) {
+				if (path === "SCRIPTNAMES")
+					return;
+				let _item = {path: path, opds: true, raw: path};
+				if (!edit.isAbsolutePath(path)) {
+					let DIR = path.split(/\\|\//)[0] || path;
+					if (edit.VAILD_DIRS.indexOf(DIR) < 0) {
+						window.alert("不存在的常量: " + DIR);
+						return;
+					}
+
+					switch (DIR) {
+						case "RUNTIMEPATH":
+						io.getRuntimeDirectories("").forEach(function(item) {
+								_dirs.push({path: item.path + path.slice(DIR.length), opds: true, raw: "RUNTIMEPATH"});
+						});
+						return;
+						break;
+
+						default:
+						_item.path = services.directory.get(DIR, Ci.nsIFile).path + path.slice(DIR.length);
+						break;
+					}
+				}
+				_dirs.push(_item);
+		});
+
+		return _dirs;
+	},
+}
 function cpt(context, args) {
 	let offset = context.offset;
-	let dirs = getDirs();
-	let places = getFiles().concat(dirs);
+	let dirs = edit.dirs;
+	let places = edit.files.concat(dirs);
 
 	let arg = "";
 	if (args.length == 1)
@@ -154,7 +215,7 @@ function cpt(context, args) {
 		});
 }
 
-	if (isAbsolutePath(arg)) {
+	if (edit.isAbsolutePath(arg)) {
 		let dir = {path:arg, description:"Absolute Path"};
 		context.fork(dir.path, 0, this, function (context) {
 				completion.file(context, false, dir.path);
@@ -183,17 +244,21 @@ function cpt(context, args) {
 
 	context.title = ["Shortcuts", "path"];
 	context.keys = {
-		text: function (item) (new File(item.path)).leafName,
-		description: "path",
+		text: function (item) "opds" in item ? item.path : (new File(item.path)).leafName,
+		description: function (item) "opds" in item ? item.raw : item.path,
 		path: function (item) item.path
 	};
-	// context.filters = [];
+	context.filters = [];
 	context.generate = function () places;
 	context.compare = null;
-	// context.filters.push(function (item) {
-		// // FIXME: item.item
-		// return File.expandPath(item.item.path).toLowerCase().indexOf(File.expandPath(arg).toLowerCase()) >= 0;
-	// });
+	context.filters.push(function (item) {
+		// FIXME: item.item
+		if (item.item.opds) {
+			return item.item.path.toLowerCase().indexOf(arg.toLowerCase()) == 0 || item.item.raw.toLowerCase().indexOf(arg.toLowerCase()) == 0;
+		} else {
+			return (new File(item.item.path)).leafName.toLowerCase().indexOf(arg.toLowerCase()) == 0;
+		}
+	});
 	it = context.allItems;
 }
 
@@ -203,7 +268,7 @@ group.commands.add(["edi[t]", "ei"],
 		let create = false;
 		let path = "";
 		if (args.length == 0) {
-			path = getRCFile();
+			path = edit.files[0]["path"];
 		} else
 			path = args[0];
 
@@ -224,7 +289,7 @@ group.commands.add(["edi[t]", "ei"],
 			}
 		}
 
-		if (isAbsolutePath(args[0]))
+		if (edit.isAbsolutePath(args[0]))
 			path = args[0];
 
 		path = File.expandPath(path);
@@ -347,13 +412,6 @@ group.commands.add(["edi[t]", "ei"],
 		literal: 0
 	}
 );
-
-let FileCpts =  
-[
-	['RC', 'rc file: ' + getRCFile()],
-	['PrefF', 'PrefF: ' + services.directory.get("PrefF", Ci.nsIFile).path]
-];
-
 options.add( // TODO: completer, validator
 	["open-files", "opfs"],
 	"Common files",
@@ -361,46 +419,23 @@ options.add( // TODO: completer, validator
 	"RC,PrefF,ProfD/user.js,UChrm/userchrome.js,UChrm/userContent.js,UChrm/userChrome.js,UChrm/userContent.js",
 	{
 		completer: function (context) {
-			if (isAbsolutePath(context.filter))
+			if (edit.isAbsolutePath(context.filter))
 				completion.file(context, false, context.filter);
 			else {
 				context.process[1] = function(item, text) {
 					let [description, path,] = text.split(/: /);
 					return <><b xmlns:dactyl={NS}>{path}</b><span> - {description}</span></>;
 				}
-				return FileCpts;
+				return edit.FileCpts;
 			}
+		},
+		setter: function (value) {
+			edit.files = edit.getFiles(value);
+			return value;
 		},
 		validator: function (value) true
 	}
 );
-
-let DirCpts = 
-[
-	['ProfD',			'profile directory'],
-	['DefProfRt',		'user (for example /root/.mozilla)'],
-	['UChrm',			'%profile%/chrome'],
-	['DefRt',			'%installation%/defaults'],
-	['PrfDef',			'%installation%/defaults/pref'],
-	['ProfDefNoLoc',	'%installation%/defaults/profile'],
-	['APlugns',			'%installation%/plugins'],
-	['AChrom',			'%installation%/chrome'],
-	// ['ComsD',			'%installation%/components'],
-	['CurProcD',		'installation (usually)'],
-	['Home',			'OS root (for example /root)'],
-	['TmpD',			'OS tmp (for example /tmp)'],
-	['ProfLD',			'Local Settings on windows; where the network cache and fastload files are stored'],
-	['resource:app',	'application directory in a XULRunner app'],
-	['Desk',			'Desktop directory (for example ~/Desktop on Linux, C:\Documents and Settings\username\Desktop on Windows)'],
-	// ['Progs',			'User start menu programs directory (for example C:\Documents and Settings\username\Start Menu\Programs)']
-].map(function (item) {
-	let [path, description] = item;
-	return [path, description + ": " + services.directory.get(path, Ci.nsIFile).path];
-}).concat([
-		['~', 'user home: ' + File.expandPath('~')],
-		['RUNTIMEPATH', "runtimepath: " + ":help 'runtimepath'"],
-		['SCRIPTNAMES', ':scriptnames: ' + ":help :scriptnames"],
-]);
 
 options.add( // TODO: completer, validator
 	["open-dirs", "opds"],
@@ -409,17 +444,20 @@ options.add( // TODO: completer, validator
 	"UChrm,ProfD,CurProcD,DefProfRt,Desk,RUNTIMEPATH,SCRIPTNAMES", // SCRIPTNAMES: virtual directory
 	{
 		completer: function (context) {
-			if (isAbsolutePath(context.filter))
+			if (edit.isAbsolutePath(context.filter))
 				completion.directory(context, false, context.filter);
 			else {
 				context.process[1] = function(item, text) {
 					let [description, path,] = text.split(/: /);
 					return <><b xmlns:dactyl={NS}>{path}</b><span> - {description}</span></>;
 				}
-				return DirCpts;
+				return edit.DirCpts;
 			}
 		},
-
+		setter: function (value) {
+			edit.dirs = edit.getDirs(value);
+			return value;
+		},
 		validator: function (value) true
 	}
 );
@@ -599,7 +637,7 @@ var INFO =
 			  <dl dt="width: 6em;">
 			  {function () {
 				let elem = <></>;
-				FileCpts.forEach(function (item) {
+				edit.FileCpts.forEach(function (item) {
 					let [description, path] = item[1].split(/: /);
 					elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
 				});
@@ -610,7 +648,7 @@ var INFO =
 			  <dl dt="width: 6em;">
 			  {function () {
 				let elem = <></>;
-				DirCpts.forEach(function (item) {
+				edit.DirCpts.forEach(function (item) {
 					let [description, path] = item[1].split(/: /);
 					elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
 				});
@@ -634,7 +672,7 @@ var INFO =
 			  <dl dt="width: 6em;">
 			  {function () {
 				let elem = <></>;
-				FileCpts.forEach(function (item) {
+				edit.FileCpts.forEach(function (item) {
 					let [description, path] = item[1].split(/: /);
 					elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
 				});
@@ -645,7 +683,7 @@ var INFO =
 			  <dl dt="width: 6em;">
 			  {function () {
 				let elem = <></>;
-				DirCpts.forEach(function (item) {
+				edit.DirCpts.forEach(function (item) {
 					let [description, path] = item[1].split(/: /);
 					elem += <><dt>{item[0]}</dt>    <dd><p>{path}</p><p>{description}</p></dd></>;
 				});
