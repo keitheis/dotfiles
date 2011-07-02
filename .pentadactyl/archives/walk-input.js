@@ -82,7 +82,7 @@ var types = [
   "tel",
   "color",
 ].map(function(type) "@type=" + type.quote()).join(" or ");
-var xpath = '//input[(' + types + ' or not(@type)) and not(@disabled)] | //textarea';
+var xpath = '//input[(' + types + ' or not(@type)) and not(@disabled)] | //textarea | //*[@contenteditable] | //*[@originalcontenteditable]';
 
 function isVisible (elem) {
   while (elem && !(elem instanceof HTMLDocument)) {
@@ -110,7 +110,7 @@ var walkinput = function (forward) {
               continue;
             let ef = {element: e, frame: frame};
             list.push(ef);
-            if (e == focused) {
+            if (e == focused || (!focused && e.hasAttribute("contenteditable"))) { // FIXME: dirty hack
                 current = ef;
             } else if (current && !next) {
                 next = ef;
@@ -119,8 +119,10 @@ var walkinput = function (forward) {
             }
         }
       }
-      for (let i = 0; i < frame.frames.length; i++)
-        arguments.callee(frame.frames[i]);
+      for (let i = 0; i < frame.frames.length; i++) {
+        if (isVisible(frame.frames[i].frameElement))
+          arguments.callee(frame.frames[i]);
+      }
     })(content);
 
     if (list.length <= 0)
@@ -128,12 +130,12 @@ var walkinput = function (forward) {
 
     var elem = forward ? (next || list[0])
                        : (prev || list[list.length - 1]);
-
     if (!current || current.frame != elem.frame)
-      elem.frame.focus();
-    elem.element.focus();
-    if (elem.element.nodeName !== "textarea")
+      buffer.focusElement(elem.frame);
+    buffer.focusElement(elem.element);
+    if (elem.element.nodeName === "INPUT")
       elem.element.select();
+    util.scrollIntoView(elem.element);
 };
 
 group.mappings.add([modes.NORMAL, modes.INSERT], ['<M-i>', '<A-i>'],
