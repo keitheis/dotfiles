@@ -132,7 +132,8 @@ var walkinput = function (forward) {
     if (!current || current.frame != elem.frame)
       elem.frame.focus();
     elem.element.focus();
-    elem.element.select();
+    if (elem.element.nodeName !== "textarea")
+      elem.element.select();
 };
 
 group.mappings.add([modes.NORMAL, modes.INSERT], ['<M-i>', '<A-i>'],
