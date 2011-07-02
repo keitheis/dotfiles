@@ -132,11 +132,12 @@ var walkinput = function (forward) {
     if (!current || current.frame != elem.frame)
       elem.frame.focus();
     elem.element.focus();
+    elem.element.select();
 };
 
-mappings.addUserMap([modes.NORMAL, modes.INSERT], ['<M-i>', '<A-i>'],
+group.mappings.add([modes.NORMAL, modes.INSERT], ['<M-i>', '<A-i>'],
                     'Walk Input Fields (Forward)', function () walkinput(true));
-mappings.addUserMap([modes.NORMAL, modes.INSERT], ['<M-S-i>', '<A-S-i>'],
+group.mappings.add([modes.NORMAL, modes.INSERT], ['<M-S-i>', '<A-S-i>'],
                     'Walk Input Fields (Backward)', function () walkinput(false));
 
 })();
