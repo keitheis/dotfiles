@@ -130,12 +130,14 @@ var walkinput = function (forward) {
 
     var elem = forward ? (next || list[0])
                        : (prev || list[list.length - 1]);
+    var style = elem.frame.getComputedStyle(elem.element);
+    var boxShadow = style.getPropertyValue("box-shadow");
     if (!current || current.frame != elem.frame)
       buffer.focusElement(elem.frame);
     buffer.focusElement(elem.element);
-    if (elem.element.nodeName === "INPUT")
-      elem.element.select();
     util.scrollIntoView(elem.element);
+    elem.element.style.boxShadow="0 0 4px 4px blue";
+    dactyl.timeout(function () {elem.element.style.boxShadow=boxShadow;}, 1000);
 };
 
 group.mappings.add([modes.NORMAL, modes.INSERT], ['<M-i>', '<A-i>'],
