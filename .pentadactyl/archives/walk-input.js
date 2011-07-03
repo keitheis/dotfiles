@@ -136,7 +136,7 @@ var walkinput = function (forward) {
       buffer.focusElement(elem.frame);
     buffer.focusElement(elem.element);
     util.scrollIntoView(elem.element);
-    elem.element.style.boxShadow="0 0 4px 4px blue";
+    elem.element.style.boxShadow="0 0 1px 1px RoyalBlue";
     dactyl.timeout(function () {elem.element.style.boxShadow=boxShadow;}, 1000);
 };
 
