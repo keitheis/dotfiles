@@ -94,7 +94,7 @@ function isVisible (elem) {
 }
 
 var walkinput = function (forward) {
-    var focused = document.commandDispatcher.focusedElement;
+    var focused = buffer.lastInputField || document.commandDispatcher.focusedElement;
     var current = null;
     var next = null;
     var prev = null;
@@ -110,7 +110,7 @@ var walkinput = function (forward) {
               continue;
             let ef = {element: e, frame: frame};
             list.push(ef);
-            if (e == focused || (!focused && e.hasAttribute("contenteditable"))) { // FIXME: dirty hack
+            if (e == focused) {
                 current = ef;
             } else if (current && !next) {
                 next = ef;
