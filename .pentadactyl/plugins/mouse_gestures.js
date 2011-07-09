@@ -356,7 +356,11 @@ function list() {
     L: '左',
     R: '右',
     D: '下',
-    U: '上'
+    U: '上',
+    "L<R": '右->左',
+    "L>R": '左->右',
+    "W-": "滚轮向前",
+    "W+": "滚轮向后"
   };
   let pattern = /^L<R|W\+|W-|L>R|[LRDU]+$/;
   let rows = <></>;
@@ -365,19 +369,10 @@ function list() {
     if (pattern.test(item[0])) {
         switch (item[0]) {
         case "L<R":
-        human = "右->左";
-        break;
-
         case "L>R":
-        human = "左->右";
-        break;
-
         case "W-":
-        human = "滚轮向后";
-        break;
-
         case "W+":
-        human = "滚轮向前";
+        human = m[item[0]];
         break;
 
         default :
