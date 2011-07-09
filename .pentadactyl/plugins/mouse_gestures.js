@@ -309,8 +309,9 @@ options.add(["mgwheel"],
 group.commands.add(["mouseg[estures]", "mg"],
   "Reload Mouse Gestures",
   function (args) {
-    if (args.bang) // 强制重载
-      dactyl.execute(":runtime plugins/_mouse_gestures.js");
+    if (args.bang) { // 强制重载
+      return dactyl.execute("runtime plugins/_mouse_gestures.js");
+    }
 
     if (args.length == 0)
       window._MouseGestures.initialize.apply(window._MouseGestures);
@@ -332,7 +333,7 @@ group.commands.add(["mouseg[estures]", "mg"],
   },
   {
     argCount: "?",
-    bang: true, // TODO
+    bang: true,
     completer: function (context, args) {
       switch (args.completeArg) {
         case 0:

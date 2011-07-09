@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Sat 09 Jul 2011 02:10:43 PM CST
-// @Last Change: Sat 09 Jul 2011 06:49:03 PM CST
-// @Revision:    45
+// @Last Change: Sat 09 Jul 2011 07:13:49 PM CST
+// @Revision:    48
 // @Description:
 // @Usage:
 // @TODO:
@@ -48,4 +48,4 @@ userContext.MGLIST = [
 // Please don't modify lines below
 // 请不要修改下面的代码
 if (commands.get("mousegestures"))
-	commands.get("mousegestures").action();
+	dactyl.execute("mousegestures reload");
