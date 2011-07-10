@@ -77,7 +77,7 @@ var MouseGestures = function() {
           let str = action;
           if (str.charAt(0) == ':') action = function() dactyl.execute(str.substr(1));
           else if (str.charAt(0) == '#') action = function() doCommandByID(str.substr(1));
-          else action = function() events.feedkeys(str, noremap);
+          else action = function() events.feedkeys(str, noremap, true, modes.NORMAL);
         }
         gestures[gesture] = [desc, action];
       });
@@ -120,6 +120,7 @@ var MouseGestures = function() {
             this._gesture = 'L>R';
             this._gestureType = "摇杆手势";
             this.stopGesture(event);
+            this._gesture = "";
           }
         } else if (event.button == 0) {
           this._isMouseDownL = true;
@@ -129,6 +130,7 @@ var MouseGestures = function() {
             this._gesture = 'L<R';
             this._gestureType = "摇杆手势";
             this.stopGesture(event);
+            this._gesture = "";
           }
         }
         break;
