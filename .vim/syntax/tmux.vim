@@ -77,7 +77,9 @@ syn keyword tmuxOptsSetw window-status-alert-bg window-status-alert-fg
 
 
 " added by tmux 1.5
-syn keyword tmuxOptsSet mouse-resize-pane mouse-select-window
+syn keyword tmuxOptsSet mouse-resize-pane mouse-select-window mouse-utf8
+syn keyword tmuxOptsSetw utf8
+
 
 syn keyword tmuxTodo FIXME NOTE TODO XXX contained
 
