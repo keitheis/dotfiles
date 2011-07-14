@@ -1,0 +1,28 @@
+#compdef ack
+local -a types
+
+types=(actionscript ada asm batch binary cc cfmx clojure cpp csharp css delphi elisp erlang fortran go haskell hh html java javascript js jsp lisp lua make mason objc objcpp ocaml parrot perl php plone python rake ruby scala scheme shell skipped smalltalk sql tcl tex text tt vb verilog vhdl vim xml yaml noactionscript noada noasm nobatch nobinary nocc nocfmx noclojure nocpp nocsharp nocss nodelphi noelisp noerlang nofortran nogo nohaskell nohh nohtml nojava nojavascript nojs nojsp nolisp nolua nomake nomason noobjc noobjcpp noocaml noparrot noperl nophp noplone nopython norake noruby noscala noscheme noshell noskipped nosmalltalk nosql notcl notex notext nott novb noverilog novhdl novim noxml noyaml)
+
+_arguments \
+	"--noenv[Ignore environment variables and ~/.ackrc]" \
+	"--man[Man page]" \
+	"--help[This help]" \
+	"(--help-types --help=types)"{--help-types,--help=types}"[List of valid types]" \
+	"--version[Display version & copyright]" \
+	"--thpppt[Bill the Cat]" \
+	'(--ignore-case -i)'{--ignore-case,-i}'[Ignore case distinctions in PATTERN]' \
+	'(--smart-case --nosmart-case)'{--smart-case,--nosmart-case}'[Ignore case distinctions in PATTERN, only if PATTERN contains no upper case Ignored if -i is specified]' \
+	'(--invert-match -v)'{--invert-match,-v}'[Invert match: select non-matching lines]' \
+	'(--word-regexp -w)'{--word-regexp,-w}'[Force PATTERN to match only whole words]' \
+	'(--literal -Q)'{--literal,-Q}'[Quote all metacharacters; PATTERN is literal]' \
+	'(--all-types -a)'{--all-types,-a}'[All file types searched; Ignores CVS, .svn and other ignored directories]' \
+	'(--recurse -R -r)'{--recurse,-R,-r}"[Recurse into subdirectories (ack's default behavior)]" \
+	'(--no-recurse -n)'{--no-recurse,-n}'[No descending into subdirectories]' \
+	'(--ignore-dir= --noignore-dir=)'{--ignore-dir=,--noignore-dir=}':Add/Remove directory from the list of ignored dirs:_dirs' \
+	'--show-types[Show which types each file has.]' \
+	'(--follow --nofollow)'{--follow,--nofollow}'[Follow symlinks. Default is off.]' \
+	'--pager=:Pipes all ack output through COMMAND.:_command_names' \
+	'--nopager[Do not send output through a pager.]' \
+	'(--color-filename= --color-match= --color-lineno=)'{--color-filename=,--color-match=,--color-lineno=}':Set the color for filenames, matches, and line numbers.:_x_color' \
+	'--type=:Specify the types of files to include or exclude from a search.:($types)' \
+	'*:files:_files'
