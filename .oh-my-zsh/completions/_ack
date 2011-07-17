@@ -18,11 +18,11 @@ _arguments \
 	'(--all-types -a)'{--all-types,-a}'[All file types searched; Ignores CVS, .svn and other ignored directories]' \
 	'(--recurse -R -r)'{--recurse,-R,-r}"[Recurse into subdirectories (ack's default behavior)]" \
 	'(--no-recurse -n)'{--no-recurse,-n}'[No descending into subdirectories]' \
-	'(--ignore-dir= --noignore-dir=)'{--ignore-dir=,--noignore-dir=}':Add/Remove directory from the list of ignored dirs:_dirs' \
+	'(--ignore-dir= --noignore-dir=)'{--ignore-dir=,--noignore-dir=}'[Add/Remove directory from the list of ignored dirs.]:dirs:_dirs' \
 	'--show-types[Show which types each file has.]' \
 	'(--follow --nofollow)'{--follow,--nofollow}'[Follow symlinks. Default is off.]' \
-	'--pager=:Pipes all ack output through COMMAND.:_command_names' \
+	'--pager=[Pipes all ack output through COMMAND.]:command names:_command_names' \
 	'--nopager[Do not send output through a pager.]' \
-	'(--color-filename= --color-match= --color-lineno=)'{--color-filename=,--color-match=,--color-lineno=}':Set the color for filenames, matches, and line numbers.:_x_color' \
-	'--type=:Specify the types of files to include or exclude from a search.:($types)' \
+	'(--color-filename= --color-match= --color-lineno=)'{--color-filename=,--color-match=,--color-lineno=}'[Set the color for filenames, matches, and line numbers.]:colors:_x_color' \
+	'--type=[Specify the types of files to include or exclude from a search.]:types:($types)' \
 	'*:files:_files'

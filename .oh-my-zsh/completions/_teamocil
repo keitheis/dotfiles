@@ -1,0 +1,15 @@
+#compdef teamocil
+local -a files
+
+files=()
+
+for file in $(ls $HOME/.teamocil/*.yml)
+do
+	files+=($(basename $file .yml))
+done
+
+_arguments \
+	"--here[Set up the first window in the current window.]" \
+	"--help[This help]" \
+	'--layout[Use a specific layout file, instead of ~/.teamocil/<layout>.yml]:specific layout:_files' \
+	'*:files:($files)'
