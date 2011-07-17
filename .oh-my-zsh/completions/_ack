@@ -1,7 +1,20 @@
 #compdef ack
 local -a types
+local -a notypes
+local -a alltypes
 
-types=(actionscript ada asm batch binary cc cfmx clojure cpp csharp css delphi elisp erlang fortran go haskell hh html java javascript js jsp lisp lua make mason objc objcpp ocaml parrot perl php plone python rake ruby scala scheme shell skipped smalltalk sql tcl tex text tt vb verilog vhdl vim xml yaml noactionscript noada noasm nobatch nobinary nocc nocfmx noclojure nocpp nocsharp nocss nodelphi noelisp noerlang nofortran nogo nohaskell nohh nohtml nojava nojavascript nojs nojsp nolisp nolua nomake nomason noobjc noobjcpp noocaml noparrot noperl nophp noplone nopython norake noruby noscala noscheme noshell noskipped nosmalltalk nosql notcl notex notext nott novb noverilog novhdl novim noxml noyaml)
+types=()
+notypes=()
+alltypes=()
+
+for type in $(ack --help-types | awk '{print $1}' | awk -F ] '{print $2}' | sed '/^$/d')
+do
+	types+=($type)
+	notypes+=("no$type")
+done
+
+alltypes+=($types)
+alltypes+=($notypes)
 
 _arguments \
 	"--noenv[Ignore environment variables and ~/.ackrc]" \
@@ -24,5 +37,5 @@ _arguments \
 	'--pager=[Pipes all ack output through COMMAND.]:command names:_command_names' \
 	'--nopager[Do not send output through a pager.]' \
 	'(--color-filename= --color-match= --color-lineno=)'{--color-filename=,--color-match=,--color-lineno=}'[Set the color for filenames, matches, and line numbers.]:colors:_x_color' \
-	'--type=[Specify the types of files to include or exclude from a search.]:types:($types)' \
+	'--type=[Specify the types of files to include or exclude from a search.]:types:($alltypes)' \
 	'*:files:_files'
