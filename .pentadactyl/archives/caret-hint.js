@@ -301,8 +301,6 @@ let CH = {
 
 };
 
-let inited = false;
-
 options.add(["caret_hint_key", "chk"],
   "Move caret position to the head of selected element.",
   "string",
@@ -316,7 +314,7 @@ options.add(["caret_hint_key", "chk"],
       return true;
     },
     setter: function (value) {
-      if (inited && (options["caret_hint_key"] !== value)) {
+      if (this.hasChanged && (options["caret_hint_key"] !== value)) {
         delete hints.modes[options["caret_hint_key"]];
         if (value)
           CH.setup({headMode:value}); //
@@ -338,7 +336,7 @@ options.add(["caret_hint_tail_key", "chtk"],
       return true;
     },
     setter: function (value) {
-      if (inited && (options["caret_hint_tail_key"] !== value)) {
+      if (this.hasChanged && (options["caret_hint_tail_key"] !== value)) {
         delete hints.modes[options["caret_hint_tail_key"]];
         if (value)
           CH.setup({tailMode:value}); //
@@ -360,7 +358,7 @@ options.add(["caret_hint_select_key", "chsk"],
       return true;
     },
     setter: function (value) {
-      if (inited && (options["caret_hint_select_key"] !== value)) {
+      if (this.hasChanged && (options["caret_hint_select_key"] !== value)) {
         delete hints.modes[options["caret_hint_select_key"]];
         if (value)
           CH.setup({selectHeadMode:value}); //
@@ -382,7 +380,7 @@ options.add(["caret_hint_select_tail_key", "chstk"],
       return true;
     },
     setter: function (value) {
-      if (inited && (options["caret_hint_select_tail_key"] !== value)) {
+      if (this.hasChanged && (options["caret_hint_select_tail_key"] !== value)) {
         delete hints.modes[options["caret_hint_select_tail_key"]];
         if (value)
           CH.setup({selectTailMode:value}); //
@@ -456,8 +454,8 @@ group.commands.add(['caret'],
 
       }
     }
-  }
+  },
+  true
 );
-inited = true;
 
 // vim:sw=2 ts=2 et si fdm=marker:

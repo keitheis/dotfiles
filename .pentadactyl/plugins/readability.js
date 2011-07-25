@@ -1071,7 +1071,8 @@ group.commands.add(["rea[dability]", "rea"],
 				break;
 			}
 		}
-	}
+	},
+	true
 );
 
 // use local readability script

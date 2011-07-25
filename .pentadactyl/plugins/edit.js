@@ -408,7 +408,8 @@ group.commands.add(["edi[t]", "ei"],
 		bang: true,
 		completer: function (context, args) cpt(context, args), // TODO: expandPath
 		literal: 0
-	}
+	},
+	true
 );
 options.add( // TODO: completer, validator
 	["open-files", "opfs"],

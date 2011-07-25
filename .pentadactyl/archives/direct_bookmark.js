@@ -557,7 +557,6 @@ var services =
                     });
                 },
                 tags:function(user,password){
-                    return []; // temporary workaround
                     var returnValue = [];
                     var xhr = new XMLHttpRequest();
                     xhr.open("GET", "https://www.google.com/bookmarks", false, user, password);
@@ -661,7 +660,8 @@ group.commands.add(['btags'],
     function (arg) {
         setTimeout(function(){getTagsAsync().call([])},0)
     },
-    {}
+    {},
+    true
 );
 group.commands.add(['bentry'],"Goto Bookmark Entry Page",
     function(args){
@@ -694,9 +694,9 @@ group.commands.add(['bentry'],"Goto Bookmark Entry Page",
             }), args.bang ? dactyl.NEW_TAB : dactyl.CURRENT_TAB);
     },
     {
-        completer: function (context)
-            context.completions = useServicesByPost.split(/\s*/).map(function(p) [p, services[p].description])
-    }
+        completer: function (context) context.completions = useServicesByPost.split(/\s*/).map(function(p) [p, services[p].description]);
+    },
+    true
 );
 // group.commands.add(['bicon'],"Show Bookmark Count as Icon",
     // function(arg){
@@ -788,7 +788,8 @@ group.commands.add(['sbm'],"Post to Social Bookmark",
                 ]
             }
         ]
-    }
+    },
+    true
 );
 
 // vim:sw=4 ts=4 et:

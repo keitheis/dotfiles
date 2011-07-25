@@ -350,7 +350,8 @@ group.commands.add(["mouseg[estures]", "mg"],
         break;
       }
     }
-  }
+  },
+  true
 );
 
 function list() {

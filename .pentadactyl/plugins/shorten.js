@@ -145,7 +145,8 @@ group.commands.add(["shor[ten]", "sht"],
 		argCount: "*",
 		bang: true,
 		options: opt
-	}
+	},
+	true
 );
 
 // Add custom settings
