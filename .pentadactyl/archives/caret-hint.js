@@ -243,7 +243,9 @@ let CH = {
           'Move caret position to ' + (h ? 'head' : 'tail') + (s ? ' and Select' : ''),
           function (elem, loc, count) {
             moveCaret(elem, h, s);
-          }
+          },
+          null,
+          ["div", "span", "a", "p", "pre", "th", "td", "blockquote", "dt", "dd"]
         );
       });
     });
