@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Mon 27 Jun 2011 09:59:53 PM CST
-// @Last Change: Tue 28 Jun 2011 02:16:10 PM CST
-// @Revision:    114
+// @Last Change: Mon 01 Aug 2011 01:41:13 AM CST
+// @Revision:    116
 // @Description:
 // @Usage:
 // @TODO:
@@ -95,6 +95,8 @@ function tab(str, modifiers, silent) {
             case "dictg" :
             case "dictq" :
             case "dicty" :
+            case "dictz" :
+            case "dictw" : // placeholder, works for wikipedia
             args["-t"] = true;
             break;
 
