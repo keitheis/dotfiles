@@ -221,6 +221,12 @@ let INFO =
 let CH = {
   setup : function (/*modes*/) {
 
+    var filter = function (elem) {
+      if (elem.textContent.replace(/\n|\r/g, "").trim().length <= 5)
+        return false;
+      return true;
+    };
+
     let gval = function(name, def) options[name] || def;
 
     let m = arguments[0] || {};
@@ -244,13 +250,13 @@ let CH = {
           function (elem, loc, count) {
             moveCaret(elem, h, s);
           },
-          null,
+          filter,
           ["div", "span", "a", "p", "pre", "th", "td", "blockquote", "dt", "dd"]
         );
       });
     });
 
-    function moveCaret (elem, head, select) {
+    var moveCaret = function (elem, head, select) {
       let doc = elem.ownerDocument;
       let win = new XPCNativeWrapper(doc.defaultView);
       win.focus();
@@ -277,16 +283,16 @@ let CH = {
         modes.pop(modes.CARET);
         modes.push(modes.NORMAL);
         modes.push(modes.CARET);
-      }
+      };
 
       sel.addRange(r);
 
       if (select && head)
         CH.swapCaret();
 
-    }
+    };
   },
-  
+
   win: null,
 
   swapCaret: function () {
