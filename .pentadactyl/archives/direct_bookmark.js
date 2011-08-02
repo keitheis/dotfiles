@@ -694,7 +694,7 @@ group.commands.add(['bentry'],"Goto Bookmark Entry Page",
             }), args.bang ? dactyl.NEW_TAB : dactyl.CURRENT_TAB);
     },
     {
-        completer: function (context) context.completions = useServicesByPost.split(/\s*/).map(function(p) [p, services[p].description]);
+        completer: function (context) context.completions = useServicesByPost.split(/\s*/).map(function(p) [p, services[p].description])
     },
     true
 );
