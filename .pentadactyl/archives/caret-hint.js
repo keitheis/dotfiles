@@ -309,7 +309,7 @@ let CH = {
 
 };
 
-options.add(["caret_hint_key", "chk"],
+group.options.add(["caret_hint_key", "chk"],
   "Move caret position to the head of selected element.",
   "string",
   "m",
@@ -331,7 +331,7 @@ options.add(["caret_hint_key", "chk"],
     }
   }
 );
-options.add(["caret_hint_tail_key", "chtk"],
+group.options.add(["caret_hint_tail_key", "chtk"],
   "Move caret position to the tail of selected element.",
   "string",
   "M",
@@ -353,7 +353,7 @@ options.add(["caret_hint_tail_key", "chtk"],
     }
   }
 );
-options.add(["caret_hint_select_key", "chsk"],
+group.options.add(["caret_hint_select_key", "chsk"],
   "Move caret position to the head of selected element, and select.",
   "string",
   "e",
@@ -375,7 +375,7 @@ options.add(["caret_hint_select_key", "chsk"],
     }
   }
 );
-options.add(["caret_hint_select_tail_key", "chstk"],
+group.options.add(["caret_hint_select_tail_key", "chstk"],
   "Move caret position to the tail of selected element, and select.",
   "string",
   "E",
@@ -397,7 +397,7 @@ options.add(["caret_hint_select_tail_key", "chstk"],
     }
   }
 );
-options.add(["caret_hint_swap_key", "chwk"],
+group.options.add(["caret_hint_swap_key", "chwk"],
   "Swap caret position head to tail.",
   "string",
   "o",

@@ -252,7 +252,7 @@ if (!userContext.MGLIST) {
   ];
 }
 
-options.add(["mgshowmsg"],
+group.options.add(["mgshowmsg"],
   "Show message",
   "boolean",
   true,
@@ -265,7 +265,7 @@ options.add(["mgshowmsg"],
   }
 );
 
-options.add(["mgrocker"],
+group.options.add(["mgrocker"],
   "Enable rocker",
   "boolean",
   true,
@@ -278,7 +278,7 @@ options.add(["mgrocker"],
   }
 );
 
-options.add(["mgmsgcontainer"],
+group.options.add(["mgmsgcontainer"],
   "",
   "string",
   "statusline",
@@ -295,7 +295,7 @@ options.add(["mgmsgcontainer"],
   }
 );
 
-options.add(["mgwheel"],
+group.options.add(["mgwheel"],
   "Enable mouse wheel",
   "boolean",
   true,

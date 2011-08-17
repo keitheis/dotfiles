@@ -234,7 +234,7 @@ let repeat = {
 	}
 };
 
-options.add(["repeat-interval", "repint"], // TODO 提示不要设置得太小,　要不然会有性能问题
+group.options.add(["repeat-interval", "repint"], // TODO 提示不要设置得太小,　要不然会有性能问题
 	"Repeat Interval",
 	"number",
 	30,
@@ -326,3 +326,6 @@ repeat.clean();
 // session support?
 // specific event listener for loadplugins/rehash/source/restart
 // 检查内容是否发生改变
+// use storage replace preferences
+// use onUnload
+

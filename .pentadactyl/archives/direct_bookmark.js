@@ -81,7 +81,7 @@ for Migemo search: require XUL/Migemo Extension
    ]]></detail>
 </VimperatorPlugin>;
 
-options.add(["bm-tag", "bmt"],
+group.options.add(["bm-tag", "bmt"],
     "Use social bookmark services to extract tags",
     "charlist", "dgp",
     {
@@ -100,7 +100,7 @@ options.add(["bm-tag", "bmt"],
 
     }
 );
-options.add(["bm-post", "bmp"],
+group.options.add(["bm-post", "bmp"],
     "Use social bookmark services to post",
     "charlist", "dgp",
     {
@@ -119,7 +119,7 @@ options.add(["bm-post", "bmp"],
 
     }
 );
-options.add(["bm-echotype", "bme"],
+group.options.add(["bm-echotype", "bme"],
     "Post message type",
     "string", "multiline",
     {
@@ -130,13 +130,13 @@ options.add(["bm-echotype", "bme"],
         ]
     }
 );
-options.add(["bm-migemo", "bmm"],
+group.options.add(["bm-migemo", "bmm"],
     "Use Migemo completion",
     "boolean", true,
     {
     }
 );
-options.add(["bm-normalize", "bmn"],
+group.options.add(["bm-normalize", "bmn"],
     "Use normalize permalink",
     "boolean", true,
     {

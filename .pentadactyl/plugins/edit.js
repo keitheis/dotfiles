@@ -42,7 +42,7 @@ let edit = {
 			; // do nth
 		}
 		let rc_name = ".pentadactylrc";
-		if (util.OS.isWindows)
+		if (config.OS.isWindows)
 			rc_name = "_pentadactylrc";
 		edit._RC = services.directory.get("Home", Ci.nsIFile).path + File.PATH_SEP + rc_name;
 		return edit._RC;
@@ -100,7 +100,7 @@ let edit = {
 	},
 	isAbsolutePath: function(path) {
 		let absolute_pattern = /^(~\/|\/|~[^\/]+\/)/;
-		if (util.OS.isWindows)
+		if (config.OS.isWindows)
 			absolute_pattern = /^[a-zA-Z]:[\/\\]|~/;
 		return absolute_pattern.test(path);
 	},
@@ -320,7 +320,7 @@ group.commands.add(["edi[t]", "ei"],
 					for (var i = suffies.length - 1; i >= 0; i--) {
 						let pattern = new RegExp(suffies[i].replace(".", "\\.") + "$");
 						if (pattern.test(base)) {
-							if (util.OS.isWindows) {
+							if (config.OS.isWindows) {
 								try {
 									var file = Components.classes["@mozilla.org/file/local;1"]
 									.createInstance(Components.interfaces.nsILocalFile);
@@ -364,7 +364,7 @@ group.commands.add(["edi[t]", "ei"],
 									for (var i = suffies.length - 1; i >= 0; i--) {
 										let pattern = new RegExp(suffies[i].replace(".", "\\.") + "$");
 										if (pattern.test(base)) {
-											if (util.OS.isWindows) {
+											if (config.OS.isWindows) {
 												try {
 													var file = Components.classes["@mozilla.org/file/local;1"]
 													.createInstance(Components.interfaces.nsILocalFile);
@@ -410,7 +410,7 @@ group.commands.add(["edi[t]", "ei"],
 	},
 	true
 );
-options.add( // TODO: completer, validator
+group.options.add( // TODO: completer, validator
 	["open-files", "opfs"],
 	"Common files",
 	"stringlist",
@@ -435,7 +435,7 @@ options.add( // TODO: completer, validator
 	}
 );
 
-options.add( // TODO: completer, validator
+group.options.add( // TODO: completer, validator
 	["open-dirs", "opds"],
 	"Common directories",
 	"stringlist",
@@ -480,7 +480,7 @@ function findEditor (string) {
 }
 
 let editors = [];
-if (util.OS.isWindows) {
+if (config.OS.isWindows) {
 	editors = [
 		["notepad.exe", "A simple text editor for Microsoft Windows."],
 		["C:\\Program Files\\", "Program Dir"],
@@ -507,7 +507,7 @@ if (editor.length > 0) {
 		editors.push([editor, "External editor from pentadactyl 'editor' option."]);
 }
 
-options.add(
+group.options.add(
 	["open-editor", "oped"],
 	"Use Custom editor",
 	"string",
@@ -526,7 +526,7 @@ options.add(
 	}
 );
 
-options.add(
+group.options.add(
 	["open-suffix", "opsu"],
 	"File patterns that opened by external editor.",
 	"stringlist",
