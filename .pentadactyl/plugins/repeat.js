@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Sat 06 Aug 2011 03:31:12 PM CST
-// @Last Change: Mon 08 Aug 2011 02:43:22 AM CST
-// @Revision:    304
+// @Last Change: Fri 19 Aug 2011 01:21:54 AM CST
+// @Revision:    340
 // @Description:
 // @Usage:
 // @TODO:
@@ -152,6 +152,27 @@ let repeat = {
 	},
 
 	humanTime: function(interval) {
+		let m = interval;
+		let days = Math.floor(m / (24*60*60*1000));
+		m = m % (24*60*60*1000);
+		let hours = Math.floor(m / (60*60*1000));
+		m = m % (60*60*1000);
+		let minutes = Math.floor(m / (60*1000));
+		m = m % (60*1000);
+		let seconds = Math.floor(m / 1000);
+		m = m % 1000;
+		let readable = "";
+		if (days)
+			readable += days + "天";
+		if (hours)
+			readable += hours + "小时";
+		if (minutes)
+			readable += minutes + "分钟";
+		if (seconds)
+			readable += seconds + "秒";
+		if (m)
+			readable += m + "毫秒";
+		return readable;
 	},
 
 	execute: function(act, browser) {
@@ -189,19 +210,16 @@ let repeat = {
 
 	listRepeatings: function() { // TODO: command
 		if (repeat.repeatingPanels.length>0) {
-			let activeTabs = Array.slice(gBrowser.tabs).filter(function(aTab) {
-					let panel = repeat.getPanel(aTab);
-					if (panel)
-						return true;
-					return false;
-			});
 			let l = <></>;
-			activeTabs.forEach(function(aTab) {
-					let _l = <><tr><td><img src={aTab.image || DEFAULT_FAVICON}/></td><td>{gBrowser.tabContainer.getIndexOfItem(aTab)+1}</td><td>{aTab.label}</td></tr></>;
-				l+=_l;
-			})
-			dactyl.echo(<table>
-				<thead><tr><th></th><th>序号</th><th>标题</th></tr></thead>
+			Array.slice(gBrowser.tabs).forEach(function(aTab) {
+					let panel = repeat.getPanel(aTab);
+					if (panel) {
+						let _l = <><tr style="text-align:center;"><td>{gBrowser.tabContainer.getIndexOfItem(aTab)+1}</td><td style="vertical-align:middle;"><img style="vertical-align:middle;" src={aTab.image || DEFAULT_FAVICON}/>{aTab.label}</td><td>{repeat.humanTime(panel[2])}</td></tr></>;
+						l+=_l;
+					}
+			});
+			dactyl.echo(<table style="border-spacing:8px 4px;border-collape: separate;">
+				<thead><tr><th>Tab ID</th><th>标题</th><th>时间间隔</th></tr></thead>
 				<tbody>{l}</tbody>
 				</table>
 			);
