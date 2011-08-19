@@ -2,88 +2,64 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Sat 06 Aug 2011 03:31:12 PM CST
-// @Last Change: Fri 19 Aug 2011 01:21:54 AM CST
-// @Revision:    340
+// @Last Change: Fri 19 Aug 2011 03:35:53 AM CST
+// @Revision:    419
 // @Description:
 // @Usage:
 // @TODO:
 // @CHANGES:
 
 let repeat = {
-	get repeatingPanels() {
-		let panels = prefs.get("pentadactyl.plugins.repeat.repeatingPanels");
-		if (panels) {
-			let aPanel = JSON.parse(panels);
-			if (Array.isArray(aPanel))
-				return aPanel;
-			return [];
-		} else
-			return [];
-	},
-	set repeatingPanels(panels) {
-		let sPanel = JSON.stringify(panels);
-		prefs.set("pentadactyl.plugins.repeat.repeatingPanels", sPanel, true);
-	},
-
-	removePanel: function(/*aPanel*/) {
-		let _aPanel = arguments[0] || false;
-		let linkedPanel = _aPanel[0] || repeat.linkedPanel(tab);
-		let panels = repeat.repeatingPanels;
-
-		repeat.repeatingPanels = panels.filter(function(aPanel) {
-			if (aPanel[0] == linkedPanel)
-				return false;
-			return true;
-		});
-	},
-
-	addPanel: function(aPanel) {
-		let panels = repeat.repeatingPanels;
-		panels.push(aPanel);
-		repeat.repeatingPanels = panels;
-	},
-
-	getPanel: function(/*aTab*/) {
-		let tab = arguments[0] || gBrowser.mCurrentTab;
-		let linkedPanel = repeat.linkedPanel(tab);
-		let panels = repeat.repeatingPanels;
-
-		for (let [i, aPanel] in Iterator(panels)) {
-			if (aPanel[0] == linkedPanel)
-				return aPanel;
-		}
-
-		return null;
-	},
-
+	store: storage.newMap("repeat_js", {store: false}),
 	linkedPanel: function(/*aTab*/) {
 		let tab = arguments[0] || gBrowser.mCurrentTab;
 		return tab.linkedPanel;
 	},
 	linkedTab: function(/*alinkedPanel*/) {
+		let tab = gBrowser.mCurrentTab;
 		if (typeof arguments[0] !== "undefined") {
+			let linkedPanel = arguments[0];
 			Array.slice(gBrowser.tabs).forEach(function (aTab) {
-				if (aTab.linkedPanel == arguments[0])
-					return aTab;
+				if (aTab.linkedPanel == linkedPanel)
+					tab = aTab;
 			})
-			return false; // linkedPanel was provided, but we don't find the associated tab
 		}
-		
-		return gBrowser.mCurrentTab;
+		return tab;
 	},
 
 	linkedBrowser: function(/*aTab*/) {
 		return (arguments[0] && arguments[0].linkedBrowser) || gBrowser.mCurrentBrowser;
 	},
 
-	clearRepeating: function(/*aTab*/) {
-		let tab = arguments[0] || gBrowser.mCurrentTab;
-		let panel = repeat.getPanel(tab);
+	info: function(/*aTab*/) {
+		let aTab = arguments[0] || gBrowser.mCurrentTab;
+		return "标签: " + (gBrowser.tabContainer.getIndexOfItem(aTab) + 1) + " - " + aTab.label;
+	},
+
+	clearRepeating: function(/*aBuffer*/) {
+		let tab = gBrowser.mCurrentTab;
+		let buffer = arguments[0] || false;
+		if (buffer) {
+			let matches = buffer.match(/^(\d+):?/);
+			if (matches)
+				tab = gBrowser.tabs[parseInt(matches[1], 10) -1];
+		} else {
+			if (repeat.store.keys().length == 1)
+				tab = repeat.linkedTab(repeat.store.keys()[0]);
+			else {
+				if (repeat.store.keys().length == 0)
+					dactyl.echoerr("无活动定时任务");
+				else
+					dactyl.echoerr("有多个活动任务且当前标签页无活动任务, 请指定要移除的活动任务!");
+				return false;
+			}
+		}
+		let panel = repeat.store.get(tab.linkedPanel);
 		if (panel) {
-			window.clearInterval(panel[1]);
-			repeat.removePanel(panel);
+			window.clearInterval(panel[0]);
+			repeat.store.remove(tab.linkedPanel);
+			dactyl.echo("已移除给定标签中的定时任务! " + repeat.info(tab));
 			panel = null;
-			dactyl.echo("已移除给定标签中的定时任务!");
 		} else {
 			dactyl.echoerr("给定标签页中无定时任务!");
 		}
@@ -102,22 +78,15 @@ let repeat = {
 			let action = args[0] || "r" // reload by default
 
 			let linkedPanel = repeat.linkedPanel();
-			let panel = repeat.getPanel();
+			let panel = repeat.store.get(linkedPanel);
 			let browser = repeat.linkedBrowser();
 
 			if (args.bang) {
-				let tab = gBrowser.mCurrentTab;
-				if (args[0]) {
-					let buffer = args[0];
-					let matches = buffer.match(/^(\d+):?/);
-					if (matches)
-						tab = gBrowser.tabs[parseInt(matches[1], 10) -1];
-				}
-				repeat.clearRepeating(tab);
+					repeat.clearRepeating(args[0] || "");
 			} else {
 				if (panel) { // already in, now we remove it
-					window.clearInterval(panel[1]);
-					repeat.removePanel(panel);
+					window.clearInterval(panel[0]);
+					repeat.store.remove(linkedPanel);
 				}
 
 				let intervalId = window.setInterval(function() {
@@ -140,8 +109,8 @@ let repeat = {
 					},
 					interval
 				);
-				repeat.addPanel([linkedPanel, intervalId, interval]);
-				dactyl.echo("定时任务已添加!");
+				repeat.store.set(linkedPanel, [intervalId, interval]);
+				dactyl.echo("定时任务已添加! " + repeat.info() + " 时间间隔: " + repeat.humanTime(interval));
 			}
 	}
 	},
@@ -183,9 +152,9 @@ let repeat = {
 	},
 
 	generate: function(context, args) {
-		if (repeat.repeatingPanels.length>0) {
+		if (repeat.store.keys().length) {
 			let activeTabs = Array.slice(gBrowser.tabs).filter(function(aTab) {
-					let panel = repeat.getPanel(aTab);
+					let panel = repeat.store.get(aTab.linkedPanel);
 					if (panel)
 						return true;
 					return false;
@@ -193,28 +162,13 @@ let repeat = {
 		}
 	},
 
-	clean: function() {
-		let panels = repeat.repeatingPanels;
-		let validPanels = panels.filter(function (aPanel) {
-			if (Array.slice(gBrowser.tabs).some(function(aTab) {
-				if (aTab.linkedPanel == aPanel[0])
-					return true;
-				return false;
-			})) {
-				return true;
-			}
-			return false;
-		});
-		repeat.repeatingPanels = validPanels;
-	},
-
 	listRepeatings: function() { // TODO: command
-		if (repeat.repeatingPanels.length>0) {
+		if (repeat.store.keys().length) {
 			let l = <></>;
 			Array.slice(gBrowser.tabs).forEach(function(aTab) {
-					let panel = repeat.getPanel(aTab);
+					let panel = repeat.store.get(aTab.linkedPanel);
 					if (panel) {
-						let _l = <><tr style="text-align:center;"><td>{gBrowser.tabContainer.getIndexOfItem(aTab)+1}</td><td style="vertical-align:middle;"><img style="vertical-align:middle;" src={aTab.image || DEFAULT_FAVICON}/>{aTab.label}</td><td>{repeat.humanTime(panel[2])}</td></tr></>;
+						let _l = <><tr style="text-align:center;"><td>{gBrowser.tabContainer.getIndexOfItem(aTab)+1}</td><td style="vertical-align:middle;"><img style="vertical-align:middle;" src={aTab.image || DEFAULT_FAVICON}/>{aTab.label}</td><td>{repeat.humanTime(panel[1])}</td></tr></>;
 						l+=_l;
 					}
 			});
@@ -243,7 +197,7 @@ let repeat = {
 	confirm: function(interval) {
 		let answer = true;
 		if (interval <=3000) {
-			commandline.input("设置的时间间隔太小, 你确定要继续吗? (y/n) : ", function(choose) { // TODO: has no affect
+			commandline.input("设置的时间间隔太小, 你确定要继续吗? (y/n) : ", function(choose) { // TODO: has no effect
 				if (choose!="y" || choose!="Y")
 					answer = false;
 			});
@@ -277,8 +231,8 @@ group.commands.add(["rep[eat]", "rep"],
 		completer: function(context, args) {
 			if (args.bang) {
 				context.filters.push(function(item) {
-					return repeat.repeatingPanels.some(function(aPanel) {
-						if (item.item.tab.linkedPanel == aPanel[0])
+						return Array.slice(repeat.store.keys()).some(function(linkedPanel) {
+						if (item.item.tab.linkedPanel == linkedPanel)
 							return true;
 						return false;
 					})
@@ -318,7 +272,7 @@ group.commands.add(["rep[eat]", "rep"],
 	true
 );
 
-if (mappings.get(modes.NORMAL, "<Leader>rr"))
+if (mappings.get(modes.NORMAL, "<Leader>rr")) // TODO
 	dactyl.echoerr("<Leader>rr 已被绑定");
 else {
 	group.mappings.add(
@@ -330,7 +284,17 @@ else {
 	);
 }
 
-repeat.clean();
+/**
+ * 移除当前所有正在运行的任务
+ */
+function onUnload() { // :rehash, exit firefox/current window, disable pentadactyl extension
+	Array.slice(repeat.store.keys()).forEach(function (linkedPanel) {
+		let panel = repeat.store.get(linkedPanel);
+		window.clearInterval(panel[0]);
+	});
+
+	repeat.store.clear();
+}
 
 
 // 默认无限循环
@@ -344,6 +308,6 @@ repeat.clean();
 // session support?
 // specific event listener for loadplugins/rehash/source/restart
 // 检查内容是否发生改变
-// use storage replace preferences
+// use storage to replace preferences
 // use onUnload
 
