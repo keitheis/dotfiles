@@ -20,6 +20,7 @@ group.mappings.add(
 		if (!Firebug.isOpen)
 			Firebug.toggleBar(true, 'console');
 		Firebug.chrome.switchToPanel(Firebug.currentContext, "console");
+		enableCurrentPanel();
 		Firebug.CommandLine.focus(Firebug.currentContext);
 	}
 );
@@ -32,6 +33,7 @@ group.mappings.add(
 		if (!Firebug.isOpen)
 			Firebug.toggleBar(true, 'console');
 		Firebug.chrome.switchToPanel(Firebug.currentContext, "console");
+		enableCurrentPanel();
 		Firebug.CommandLine.toggleMultiLine();
 		Firebug.CommandLine.focus(Firebug.currentContext);
 	}
@@ -42,20 +44,22 @@ group.mappings.add(
 	mappingKey('i'),
 	"Inspect Element",
 	function() {
-		Firebug.showBar(false);
+		// Firebug.setSuspended();
+		Firebug.toggleBar(true, "html");
+		Firebug.minimizeBar();
 		if (!hints.modes["Q"]) {
 			hints.addMode("Q", "Inspect Element", function(elem) {
 					Firebug.Inspector.startInspecting(Firebug.currentContext);
 					Firebug.Inspector.inspectNode(elem);
 					Firebug.Inspector.stopInspecting(false, true);
-					Firebug.showBar(true);
-					Firebug.chrome.selectPanel("html");
+					Firebug.toggleBar(true, "html");
 					elem.scrollIntoView();
 			}, null, ["*"]);
 		}
 		modes.push(modes.NORMAL);
 		events.feedkeys(";", true, true, modes.NORMAL);
 		events.feedkeys("Q", true, true);
+		// Firebug.showBar(true);
 	}
 );
 
@@ -93,10 +97,20 @@ panels.forEach(function (panelType, index) {
 		);
 });
 
+function enableCurrentPanel() {
+	var panelBar = Firebug.chrome.$("fbPanelBar1");
+	var panelType = panelBar.selectedTab.panelType;
+	if (panelType.prototype.setEnabled) {
+		panelType.prototype.setEnabled(true);
+		panelBar.updateTab(panelType);
+	}
+}
+
 function execute(code) { // TODO: failed when firebug is suspendeded
 	let cl = Firebug.CommandLine;
-	let context = Firebug.currentContext;
 	Firebug.toggleBar(true, "console");
+	enableCurrentPanel();
+	let context = Firebug.currentContext;
 	cl.enter(context, code);
 }
 
@@ -105,9 +119,6 @@ group.mappings.add(
 	mappingKey('q'),
 	"Toggle QuickInfoBar",
 	function() {
-		if (!Firebug.currentContext)
-			Firebug.toggleBar(true);
-		Firebug.Inspector.toggleInspecting(Firebug.currentContext);
 		Firebug.Inspector.toggleQuickInfoBox();
 	}
 );
