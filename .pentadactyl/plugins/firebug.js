@@ -93,6 +93,13 @@ panels.forEach(function (panelType, index) {
 		);
 });
 
+function execute(code) { // TODO: failed when firebug is suspendeded
+	let cl = Firebug.CommandLine;
+	let context = Firebug.currentContext;
+	Firebug.toggleBar(true, "console");
+	cl.enter(context, code);
+}
+
 group.mappings.add(
 	[modes.NORMAL],
 	mappingKey('q'),
@@ -113,10 +120,7 @@ group.commands.add(["fireb[ug]", "fb"],
 			return true;
 		}
 		let code = args[0];
-		let cl = Firebug.CommandLine;
-		let context = Firebug.currentContext;
-		Firebug.toggleBar(true, "console");
-		cl.enter(context, code);
+		execute(code);
 	},
 	{
 		bang: true,
@@ -195,3 +199,51 @@ let console = function() { // TODO
 		return "Inspects an object in the most suitable tab, or the tab identified by the optional argument tabName.";
 	};
 };
+
+Components.utils.import("resource://gre/modules/NetUtil.jsm");
+group.commands.add(["firebug-load", "fbl"],
+	"load file",
+	function (args) {
+		let filename = args[0];
+		if (!File.isAbsolutePath(filename))
+			filename = io.cwd.path + File.PATH_SEP + filename;
+		filename = File.expandPath(filename);
+		var localFile = Components.classes["@mozilla.org/file/local;1"]
+                .createInstance(Components.interfaces.nsILocalFile);
+		try {
+			localFile.initWithPath(filename);
+			if (localFile.isFile() && localFile.isReadable()) {
+
+				NetUtil.asyncFetch(localFile, function(inputStream, status) {
+						if (!Components.isSuccessCode(status)) {
+							// Handle error!
+							return;
+						}
+
+						// The file data is contained within inputStream.
+						// You can read it into a string with
+						var code = NetUtil.readInputStreamToString(inputStream, inputStream.available());
+						execute(code);
+
+				});
+			} else {
+				dactyl.echoerr("文件不可读或者是错误");
+			}
+		} catch (e) {
+			dactyl.echoerr("打开文件失败!");
+		} finally {
+
+		}
+	},
+	{
+		bang: true,
+		completer: function (context, args) {
+			context.filters.push(function (item) {
+				return item.isdir || /\.jsm?$/.test(item.path);
+			});
+			completion.file(context, true);
+		},
+		literal: 0
+	},
+	true
+);
