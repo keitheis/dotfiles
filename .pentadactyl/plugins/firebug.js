@@ -1,69 +1,136 @@
+"use strict";
+
+let FB = (function () {
+
+	return {
+		execute: function execute(code) {
+
+		},
+	};
+}());
 // Console API
 var console = {};
 
 // Command Line API
 // http://getfirebug.com/wiki/index.php/Command_Line_API
 var G = {
+	"$0" : "The currently-selected object in the inspector.",
+	$1 : "The previously-selected object in the inspector.",
 	$ : function(id) {
-		return "Returns a single element with the given id.";
+		return <dl>
+			<dt><![CDATA[$(id)]]></dt>
+			<dd>Returns a single element with the given id.</dd>
+		</dl>;
 	},
 	$$ : function(selector) {
-		return "Returns an array of elements that match the given CSS selector.";
+		return <dl>
+			<dt>$$(selector)</dt>
+			<dd>Returns an array of elements that match the given CSS selector.</dd>
+		</dl>;
 	},
 	$x : function(xpath) {
-		return "Returns an array of elements that match the given XPath expression.";
+		return <dl>
+			<dt><![CDATA[$x(xpath)]]></dt>
+			<dd>Returns an array of elements that match the given XPath expression.</dd>
+		</dl>;
 	},
-	$0 : "The currently-selected object in the inspector.",
-	$1 : "The previously-selected object in the inspector.",
 	$n : function(index) {
-		return "Access to an array of last 5 inspected elements.";
+		return <dl>
+			<dt>$n(index)</dt>
+			<dd>Access to an array of last 5 inspected elements.</dd>
+		</dl>;
 	},
 	dir : function(object) {
-		return "Prints an interactive listing of all properties of the object. This looks identical to the view that you would see in the DOM tab.";
+		return <dl>
+			<dt>dir(object)</dt>
+			<dd>Prints an interactive listing of all properties of the object. This looks identical to the view that you would see in the DOM tab.</dd>
+		</dl>;
 	},
 	dirxml : function(node) {
-		return "Prints the XML source tree of an HTML or XML element. This looks identical to the view that you would see in the HTML tab. You can click on any node to inspect it in the HTML tab.";
+		return <dl>
+			<dt>dirxml(node)</dt>
+			<dd>Prints the XML source tree of an HTML or XML element. This looks identical to the view that you would see in the HTML tab. You can click on any node to inspect it in the HTML tab.</dd>
+		</dl>;
 	},
 	cd : function(window) {
-		return "By default, command line expressions are relative to the top-level window of the page. cd() allows you to use the window of a frame in the page instead.";
+		return <dl>
+			<dt>cd(window)</dt>
+			<dd>By default, command line expressions are relative to the top-level window of the page. cd() allows you to use the window of a frame in the page instead.</dd>
+		</dl>;
 	},
 	clear : function() {
-		return "Clears the console.";
+		return <dl>
+			<dt>clear()</dt>
+			<dd>Clears the console.</dd>
+		</dl>;
 	},
 	inspect : function(object, tabName) {
-		return "Inspects an object in the most suitable tab, or the tab identified by the optional argument tabName.";
+		return <dl>
+			<dt>inspect(object[, tabName])</dt>
+			<dd>Inspects an object in the most suitable tab, or the tab identified by the optional argument tabName.</dd>
+		</dl>;
 	},
 	keys : function(object) {
-		return "Returns an array containing the names of all properties of the object.";
+		return <dl>
+			<dt>keys(object)</dt>
+			<dd>Returns an array containing the names of all properties of the object.</dd>
+		</dl>;
 	},
 	values : function(object) {
-		return "Returns an array containing the values of all properties of the object.";
+		return <dl>
+			<dt>values(object)</dt>
+			<dd>Returns an array containing the values of all properties of the object.</dd>
+		</dl>;
 	},
 	debug : function(fn) {
-		return "Adds a breakpoint on the first line of a function.";
+		return <dl>
+			<dt>debug(fn)</dt>
+			<dd>Adds a breakpoint on the first line of a function.</dd>
+		</dl>;
 	},
 	undebug : function (fn) {
-		return "Removes the breakpoint on the first line of a function.";
+		return <dl>
+			<dt>undebug(fn)</dt>
+			<dd>Removes the breakpoint on the first line of a function.</dd>
+		</dl>;
 	},
 	monitor : function (fn) {
-		return "Turns on logging for all calls to a function.";
+		return <dl>
+			<dt>monitor</dt>
+			<dd>Turns on logging for all calls to a function.</dd>
+		</dl>;
 	},
 	unmonitor : function (fn) {
-		return "Turns off logging for all calls to a function.";
+		return <dl>
+			<dt>unmonitor(fn)</dt>
+			<dd>Turns off logging for all calls to a function.</dd>
+		</dl>;
 	},
 	monitorEvents : function (object, types) {
-		return <><![CDATA[Turns on logging for all events dispatched to an object. The optional argument types may specify a specific family of events to log. The most commonly used values for types are "mouse" and "key".
+		return <dl>
+			<dt>monitorEvents(object[, types])</dt>
+			<dd>Turns on logging for all events dispatched to an object. The optional argument types may specify a specific family of events to log. The most commonly used values for types are "mouse" and "key".
 
-				The full list of available types includes "composition", "contextmenu", "drag", "focus", "form", "key", "load", "mouse", "mutation", "paint", "scroll", "text", "ui", and "xul".]]></>.toString();
+				The full list of available types includes "composition", "contextmenu", "drag", "focus", "form", "key", "load", "mouse", "mutation", "paint", "scroll", "text", "ui", and "xul".</dd>
+		</dl>;
 	},
 	unmonitorEvents : function (object, types) {
-		return "Turns off logging for all events dispatched to an object.";
+		return <dl>
+			<dt>unmonitorEvents(object[, types])</dt>
+			<dd>Turns off logging for all events dispatched to an object.</dd>
+		</dl>;
 	},
 	profile : function (title) {
-		return "Turns on the JavaScript profiler. The optional argument title would contain the text to be printed in the header of the profile report.";
+		return <dl>
+			<dt>profile([title])</dt>
+			<dd>Turns on the JavaScript profiler. The optional argument title would contain the text to be printed in the header of the profile report.</dd>
+		</dl>;
 	},
 	profileEnd : function () {
-		return "Turns off the JavaScript profiler and prints its report.";
+		return <dl>
+			<dt>profileEnd()</dt>
+			<dd>Turns off the JavaScript profiler and prints its report.</dd>
+		</dl>;
 	},
 };
 
@@ -262,6 +329,56 @@ group.commands.add(["firebug-panel", "fbp"],
 	true
 );
 
+group.commands.add(["firebug-help", "fbh"],
+	"Firebug Command Line API tips!",
+	function (args) {
+		let output = <></>;
+		if (args.length==0) {
+			for ( var elem in G ) {
+				var e = G[elem];
+				if (typeof e == "string")
+					output += <><dl><dt>{elem}</dt><dd>{e}</dd></dl></>;
+				else
+					output += <>{e()}</>;
+			}
+		} else {
+			var e = G[args[0]];
+			if (G.hasOwnProperty(args[0]) && e) {
+				if (typeof e == "string")
+					output = <dl><dt>{args[0]}</dt><dd>{e}</dd></dl>;
+				else
+					output = e();
+			} else {
+				dactyl.echoerr("Help item doesn't exist!");
+				return false;
+			}
+		}
+		dactyl.echo(<div style="padding:2em;width:600px;line-height:24px;white-space:normal;"><p><a href="http://getfirebug.com/wiki/index.php/Command_Line_API" title="Command Line API" highlight="URL">Command Line API</a></p>{output}</div>, commandline.FORCE_MULTILINE);
+	},
+	{
+		bang: true,
+		completer: function(context, args) {
+			context.process[1] = function(item, text) <span><b highlight="Object">{item.item[2] + ": "}</b>{text}</span>;
+			context.compare = null;
+			let completions = [];
+			for (var elem in G) {
+				var e = G[elem];
+				var title = elem;
+				var desc = "";
+				if (typeof e == "string") {
+					desc = e;
+					completions.push([title, desc, elem]);
+				} else {
+					completions.push([title, e().dd.text(), e().dt.text()]);
+				}
+			}
+			context.completions = completions;
+		},
+		literal: 1
+	},
+	true
+);
+
 Components.utils.import("resource://gre/modules/NetUtil.jsm");
 group.commands.add(["firebug-load", "fbl"],
 	"load file",
@@ -309,3 +426,5 @@ group.commands.add(["firebug-load", "fbl"],
 	},
 	true
 );
+
+// - tips for console api
