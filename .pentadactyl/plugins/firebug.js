@@ -14,101 +14,102 @@ var console = {};
 // Command Line API
 // http://getfirebug.com/wiki/index.php/Command_Line_API
 var G = {
+	// "_desc" : "Object itself!",
 	"$0" : "The currently-selected object in the inspector.",
 	$1 : "The previously-selected object in the inspector.",
 	$ : function(id) {
 		return <dl>
-			<dt><![CDATA[$(id)]]></dt>
+			<dt highlight="Function"><![CDATA[$(id)]]></dt>
 			<dd>Returns a single element with the given id.</dd>
 		</dl>;
 	},
 	$$ : function(selector) {
 		return <dl>
-			<dt>$$(selector)</dt>
+			<dt highlight="Function">$$(selector)</dt>
 			<dd>Returns an array of elements that match the given CSS selector.</dd>
 		</dl>;
 	},
 	$x : function(xpath) {
 		return <dl>
-			<dt><![CDATA[$x(xpath)]]></dt>
+			<dt highlight="Function"><![CDATA[$x(xpath)]]></dt>
 			<dd>Returns an array of elements that match the given XPath expression.</dd>
 		</dl>;
 	},
 	$n : function(index) {
 		return <dl>
-			<dt>$n(index)</dt>
+			<dt highlight="Function">$n(index)</dt>
 			<dd>Access to an array of last 5 inspected elements.</dd>
 		</dl>;
 	},
 	dir : function(object) {
 		return <dl>
-			<dt>dir(object)</dt>
+			<dt highlight="Function">dir(object)</dt>
 			<dd>Prints an interactive listing of all properties of the object. This looks identical to the view that you would see in the DOM tab.</dd>
 		</dl>;
 	},
 	dirxml : function(node) {
 		return <dl>
-			<dt>dirxml(node)</dt>
+			<dt highlight="Function">dirxml(node)</dt>
 			<dd>Prints the XML source tree of an HTML or XML element. This looks identical to the view that you would see in the HTML tab. You can click on any node to inspect it in the HTML tab.</dd>
 		</dl>;
 	},
 	cd : function(window) {
 		return <dl>
-			<dt>cd(window)</dt>
+			<dt highlight="Function">cd(window)</dt>
 			<dd>By default, command line expressions are relative to the top-level window of the page. cd() allows you to use the window of a frame in the page instead.</dd>
 		</dl>;
 	},
 	clear : function() {
 		return <dl>
-			<dt>clear()</dt>
+			<dt highlight="Function">clear()</dt>
 			<dd>Clears the console.</dd>
 		</dl>;
 	},
 	inspect : function(object, tabName) {
 		return <dl>
-			<dt>inspect(object[, tabName])</dt>
+			<dt highlight="Function">inspect(object[, tabName])</dt>
 			<dd>Inspects an object in the most suitable tab, or the tab identified by the optional argument tabName.</dd>
 		</dl>;
 	},
 	keys : function(object) {
 		return <dl>
-			<dt>keys(object)</dt>
+			<dt highlight="Function">keys(object)</dt>
 			<dd>Returns an array containing the names of all properties of the object.</dd>
 		</dl>;
 	},
 	values : function(object) {
 		return <dl>
-			<dt>values(object)</dt>
+			<dt highlight="Function">values(object)</dt>
 			<dd>Returns an array containing the values of all properties of the object.</dd>
 		</dl>;
 	},
 	debug : function(fn) {
 		return <dl>
-			<dt>debug(fn)</dt>
+			<dt highlight="Function">debug(fn)</dt>
 			<dd>Adds a breakpoint on the first line of a function.</dd>
 		</dl>;
 	},
 	undebug : function (fn) {
 		return <dl>
-			<dt>undebug(fn)</dt>
+			<dt highlight="Function">undebug(fn)</dt>
 			<dd>Removes the breakpoint on the first line of a function.</dd>
 		</dl>;
 	},
 	monitor : function (fn) {
 		return <dl>
-			<dt>monitor</dt>
+			<dt highlight="Function">monitor</dt>
 			<dd>Turns on logging for all calls to a function.</dd>
 		</dl>;
 	},
 	unmonitor : function (fn) {
 		return <dl>
-			<dt>unmonitor(fn)</dt>
+			<dt highlight="Function">unmonitor(fn)</dt>
 			<dd>Turns off logging for all calls to a function.</dd>
 		</dl>;
 	},
 	monitorEvents : function (object, types) {
 		return <dl>
-			<dt>monitorEvents(object[, types])</dt>
+			<dt highlight="Function">monitorEvents(object[, types])</dt>
 			<dd>Turns on logging for all events dispatched to an object. The optional argument types may specify a specific family of events to log. The most commonly used values for types are "mouse" and "key".
 
 				The full list of available types includes "composition", "contextmenu", "drag", "focus", "form", "key", "load", "mouse", "mutation", "paint", "scroll", "text", "ui", and "xul".</dd>
@@ -116,22 +117,25 @@ var G = {
 	},
 	unmonitorEvents : function (object, types) {
 		return <dl>
-			<dt>unmonitorEvents(object[, types])</dt>
+			<dt highlight="Function">unmonitorEvents(object[, types])</dt>
 			<dd>Turns off logging for all events dispatched to an object.</dd>
 		</dl>;
 	},
 	profile : function (title) {
 		return <dl>
-			<dt>profile([title])</dt>
+			<dt highlight="Function">profile([title])</dt>
 			<dd>Turns on the JavaScript profiler. The optional argument title would contain the text to be printed in the header of the profile report.</dd>
 		</dl>;
 	},
 	profileEnd : function () {
 		return <dl>
-			<dt>profileEnd()</dt>
+			<dt highlight="Function">profileEnd()</dt>
 			<dd>Turns off the JavaScript profiler and prints its report.</dd>
 		</dl>;
 	},
+	// console:{
+
+	// }
 };
 
 // TODO: suspended
@@ -342,7 +346,7 @@ group.commands.add(["firebug-help", "fbh"],
 			for ( var elem in G ) {
 				var e = G[elem];
 				if (typeof e == "string")
-					output += <><dl><dt>{elem}</dt><dd>{e}</dd></dl></>;
+					output += <><dl><dt highlight="String">{elem}</dt><dd>{e}</dd></dl></>;
 				else
 					output += <>{e()}</>;
 			}
@@ -350,7 +354,7 @@ group.commands.add(["firebug-help", "fbh"],
 			var e = G[args[0]];
 			if (G.hasOwnProperty(args[0]) && e) {
 				if (typeof e == "string")
-					output = <dl><dt>{args[0]}</dt><dd>{e}</dd></dl>;
+					output = <dl><dt highlight="String">{args[0]}</dt><dd>{e}</dd></dl>;
 				else
 					output = e();
 			} else {
@@ -363,7 +367,7 @@ group.commands.add(["firebug-help", "fbh"],
 	{
 		bang: true,
 		completer: function(context, args) {
-			context.process[1] = function(item, text) <span><b highlight="Object">{item.item[2] + ": "}</b>{text}</span>;
+			context.process[1] = function(item, text) <span><b highlight={item.item[3]}>{item.item[2] + ": "}</b>{text}</span>;
 			context.compare = null;
 			let completions = [];
 			for (var elem in G) {
@@ -372,9 +376,9 @@ group.commands.add(["firebug-help", "fbh"],
 				var desc = "";
 				if (typeof e == "string") {
 					desc = e;
-					completions.push([title, desc, elem]);
+					completions.push([title, desc, elem, "String"]);
 				} else {
-					completions.push([title, e().dd.text(), e().dt.text()]);
+					completions.push([title, e().dd.text(), e().dt.text(), "Function"]);
 				}
 			}
 			context.completions = completions;
