@@ -273,6 +273,11 @@ group.commands.add(["fireb[ug]", "fb"],
 		bang: true,
 		// completer: completion.javascript,
 		completer: function(context, args) {
+			if (!Firebug.currentContext) {
+				Firebug.toggleBar(true, "console");
+				enableCurrentPanel();
+				Firebug.minimizeBar();
+			}
 			context.regenerate = true;
 			var wrapped = content.wrappedJSObject;
 			// update(wrapped, G); // NB: dangerous, plz never use it
