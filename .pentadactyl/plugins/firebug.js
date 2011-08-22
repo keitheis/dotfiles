@@ -1,3 +1,72 @@
+// Console API
+var console = {};
+
+// Command Line API
+// http://getfirebug.com/wiki/index.php/Command_Line_API
+var G = {
+	$ : function(id) {
+		return "Returns a single element with the given id.";
+	},
+	$$ : function(selector) {
+		return "Returns an array of elements that match the given CSS selector.";
+	},
+	$x : function(xpath) {
+		return "Returns an array of elements that match the given XPath expression.";
+	},
+	$0 : "The currently-selected object in the inspector.",
+	$1 : "The previously-selected object in the inspector.",
+	$n : function(index) {
+		return "Access to an array of last 5 inspected elements.";
+	},
+	dir : function(object) {
+		return "Prints an interactive listing of all properties of the object. This looks identical to the view that you would see in the DOM tab.";
+	},
+	dirxml : function(node) {
+		return "Prints the XML source tree of an HTML or XML element. This looks identical to the view that you would see in the HTML tab. You can click on any node to inspect it in the HTML tab.";
+	},
+	cd : function(window) {
+		return "By default, command line expressions are relative to the top-level window of the page. cd() allows you to use the window of a frame in the page instead.";
+	},
+	clear : function() {
+		return "Clears the console.";
+	},
+	inspect : function(object, tabName) {
+		return "Inspects an object in the most suitable tab, or the tab identified by the optional argument tabName.";
+	},
+	keys : function(object) {
+		return "Returns an array containing the names of all properties of the object.";
+	},
+	values : function(object) {
+		return "Returns an array containing the values of all properties of the object.";
+	},
+	debug : function(fn) {
+		return "Adds a breakpoint on the first line of a function.";
+	},
+	undebug : function (fn) {
+		return "Removes the breakpoint on the first line of a function.";
+	},
+	monitor : function (fn) {
+		return "Turns on logging for all calls to a function.";
+	},
+	unmonitor : function (fn) {
+		return "Turns off logging for all calls to a function.";
+	},
+	monitorEvents : function (object, types) {
+		return <><![CDATA[Turns on logging for all events dispatched to an object. The optional argument types may specify a specific family of events to log. The most commonly used values for types are "mouse" and "key".
+
+				The full list of available types includes "composition", "contextmenu", "drag", "focus", "form", "key", "load", "mouse", "mutation", "paint", "scroll", "text", "ui", and "xul".]]></>.toString();
+	},
+	unmonitorEvents : function (object, types) {
+		return "Turns off logging for all events dispatched to an object.";
+	},
+	profile : function (title) {
+		return "Turns on the JavaScript profiler. The optional argument title would contain the text to be printed in the header of the profile report.";
+	},
+	profileEnd : function () {
+		return "Turns off the JavaScript profiler and prints its report.";
+	},
+};
+
 // TODO: suspended
 function mappingKey(/*prefix=<Leader>,*/char) {
 	return ["<Leader>"+options["firebug-key"]+char];
@@ -135,7 +204,23 @@ group.commands.add(["fireb[ug]", "fb"],
 	},
 	{
 		bang: true,
-		completer: completion.javascript,
+		// completer: completion.javascript,
+		completer: function(context, args) {
+			context.regenerate = true;
+			var wrapped = content.wrappedJSObject;
+			// update(wrapped, G); // NB: dangerous, plz never use it
+			// wrapped.console = console;
+			var localcontext = modules.newContext(wrapped, true);
+			var web = modules.JavaScript();
+			web.newContext = function newContext() modules.newContext(localcontext, true);
+
+			web.globals = [
+				[wrapped.console, "Console API"],
+				[G, "Command Line API"],
+			].concat(web.globals.filter(function ([global]) isPrototypeOf.call(global, wrapped)));
+
+			context.fork("js", 0, web, "complete");
+		},
 		literal: 0
 	},
 	true
@@ -176,40 +261,6 @@ group.commands.add(["firebug-panel", "fbp"],
 	},
 	true
 );
-
-// Command Line API
-// http://getfirebug.com/wiki/index.php/Command_Line_API
-let console = function() { // TODO
-	this.$ = function(id) {
-		return "Returns a single element with the given id.";
-	};
-	this.$$ = function(selector) {
-		return "Returns an array of elements that match the given CSS selector.";
-	};
-	this.$x = function(xpath) {
-		return "Returns an array of elements that match the given XPath expression.";
-	};
-	this.$0 = "The currently-selected object in the inspector.";
-	this.$1 = "The previously-selected object in the inspector.";
-	this.$n = function(index) {
-		return "Access to an array of last 5 inspected elements.";
-	};
-	this.dir = function(object) {
-		return "Prints an interactive listing of all properties of the object. This looks identical to the view that you would see in the DOM tab.";
-	};
-	this.dirxml = function(node) {
-		return "Prints the XML source tree of an HTML or XML element. This looks identical to the view that you would see in the HTML tab. You can click on any node to inspect it in the HTML tab.";
-	};
-	this.cd = function(window) {
-		return "By default, command line expressions are relative to the top-level window of the page. cd() allows you to use the window of a frame in the page instead.";
-	};
-	this.clear = function() {
-		return "Clears the console.";
-	};
-	this.inspect = function(object/*[, tabName]*/) {
-		return "Inspects an object in the most suitable tab, or the tab identified by the optional argument tabName.";
-	};
-};
 
 Components.utils.import("resource://gre/modules/NetUtil.jsm");
 group.commands.add(["firebug-load", "fbl"],
