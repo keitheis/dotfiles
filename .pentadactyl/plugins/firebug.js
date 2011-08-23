@@ -1,6 +1,6 @@
 "use strict";
 
-let FB = (function () {
+let FB = (function () { // TODO
 
 	return {
 		execute: function execute(code) {
@@ -8,14 +8,11 @@ let FB = (function () {
 		},
 	};
 }());
-// Console API
-var console = {};
 
 // Command Line API
 // http://getfirebug.com/wiki/index.php/Command_Line_API
 var G = {
-	// "_desc" : "Object itself!",
-	"$0" : "The currently-selected object in the inspector.",
+	$0 : "The currently-selected object in the inspector.",
 	$1 : "The previously-selected object in the inspector.",
 	$ : function(id) {
 		return <dl>
@@ -110,9 +107,8 @@ var G = {
 	monitorEvents : function (object, types) {
 		return <dl>
 			<dt highlight="Function">monitorEvents(object[, types])</dt>
-			<dd>Turns on logging for all events dispatched to an object. The optional argument types may specify a specific family of events to log. The most commonly used values for types are "mouse" and "key".
-
-				The full list of available types includes "composition", "contextmenu", "drag", "focus", "form", "key", "load", "mouse", "mutation", "paint", "scroll", "text", "ui", and "xul".</dd>
+			<dd>Turns on logging for all events dispatched to an object. The optional argument types may specify a specific family of events to log. The most commonly used values for types are "mouse" and "key".<p></p>
+			The full list of available types includes "composition", "contextmenu", "drag", "focus", "form", "key", "load", "mouse", "mutation", "paint", "scroll", "text", "ui", and "xul".</dd>
 		</dl>;
 	},
 	unmonitorEvents : function (object, types) {
@@ -133,10 +129,273 @@ var G = {
 			<dd>Turns off the JavaScript profiler and prints its report.</dd>
 		</dl>;
 	},
-	// console:{
+	console: {
+		log: function (object) {
+			return <dl>
+				<dt highlight="Function">console.log(object[, object, ...])</dt>
+				<dd>
+					Writes a message to the console. You may pass as many arguments as you'd like, and they will be joined together in a space-delimited line.
+					<p>The first argument to log may be a string containing printf-like string substitution patterns. For example:</p>
 
-	// }
+					<p class="code_block">console.log("The %s jumped over %d tall buildings", animal, count);</p>
+
+					<p>The example above can be re-written without string substitution to achieve the same result:</p>
+
+					<p class="code_block">console.log("The", animal, "jumped over", count, "tall buildings");</p>
+
+					<p>These two techniques can be combined. If you use string substitution but provide more arguments than there are substitution patterns, the remaining arguments will be appended in a space-delimited line, like so:</p>
+
+					<p class="code_block">console.log("I am %s and I have:", myName, thing1, thing2, thing3);</p>
+
+					<p>If objects are logged, they will be written not as static text, but as interactive hyperlinks that can be clicked to inspect the object in Firebug's HTML, CSS, Script, or DOM tabs. You may also use the %o pattern to substitute a hyperlink in a string.</p>
+
+					<p>You may also use the %c pattern to use the second argument as a style formatting parameter. For example:</p>
+
+					<p class="code_block">console.log('%cThis is red text on a green background', 'color:red; background-color:green');</p>
+
+					<p>Here is the complete set of patterns that you may use for string substitution:</p>
+					<table>
+						<thead><tr><th>Pattern</th><th>Type</th></tr></thead>
+						<tbody>
+						<tr><td>%s</td><td>String</td></tr>
+						<tr><td>%d, %i</td><td>Integer (numeric formatting is not yet supported)</td></tr>
+						<tr><td>%f</td><td>Floating point number (numeric formatting is not yet supported)</td></tr>
+						<tr><td>%o</td><td>Object hyperlink</td></tr>
+						<tr><td>%c</td><td>Style formatting</td></tr>
+						</tbody>
+					</table>
+				</dd>
+			</dl>;
+		},
+		debug: function (object) {
+			return <dl>
+				<dt highlight="Function">console.debug(object[, object, ...])</dt>
+				<dd>Writes a message to the console, including a hyperlink to the line where it was called.</dd>
+			</dl>;
+		},
+		info: function (object) {
+			return <dl>
+				<dt highlight="Function">console.info(object[, object, ...])</dt>
+				<dd>Writes a message to the console with the visual "info" icon and color coding and a hyperlink to the line where it was called.</dd>
+			</dl>;
+		},
+		warn: function (object) {
+			return <dl>
+				<dt highlight="Function">console.warn(object[, object, ...])</dt>
+				<dd>Writes a message to the console with the visual "warning" icon and color coding and a hyperlink to the line where it was called.</dd>
+			</dl>;
+		},
+		error: function (object) {
+			return <dl>
+				<dt highlight="Function">console.error(object[, object, ...])</dt>
+				<dd>Writes a message to the console with the visual "error" icon and color coding and a hyperlink to the line where it was called.</dd>
+			</dl>;
+		},
+		assert: function(expression) {
+			return <dl>
+				<dt highlight="Function">console.assert(expression[, object, ...])</dt>
+				<dd>Tests that an expression is true. If not, it will write a message to the console and throw an exception.</dd>
+			</dl>;
+		},
+		clear: function () {
+			return <dl>
+				<dt highlight="Function">console.clear()</dt>
+				<dd>Clears the console.</dd>
+			</dl>;
+		},
+		dir: function (object) {
+			return <dl>
+				<dt highlight="Function">console.dir(object)</dt>
+				<dd>Prints an interactive listing of all properties of the object. This looks identical to the view that you would see in the DOM tab.</dd>
+			</dl>;
+		},
+		dirxml: function (node) {
+			return <dl>
+				<dt highlight="Function">console.dirxml(node)</dt>
+				<dd>Prints the XML source tree of an HTML or XML element. This looks identical to the view that you would see in the HTML tab. You can click on any node to inspect it in the HTML tab.</dd>
+			</dl>;
+		},
+		trace: function () {
+			return <dl>
+				<dt highlight="Function">console.trace()</dt>
+				<dd>Prints an interactive stack trace of JavaScript execution at the point where it is called.
+
+				The stack trace details the functions on the stack, as well as the values that were passed as arguments to each function. You can click each function to take you to its source in the Script tab, and click each argument value to inspect it in the DOM or HTML tabs.</dd>
+			</dl>;
+		},
+		group: function (object) { // TODO: Call <i>console.groupEnd()</i>
+			return <dl>
+				<dt highlight="Function">console.group(object[, object, ...])</dt>
+				<dd>Writes a message to the console and opens a nested block to indent all future messages sent to the console. Call <i highlight="Function">console.groupEnd()</i> to close the block.</dd>
+			</dl>;
+		},
+		groupCollapsed: function (object) {
+			return <dl>
+				<dt highlight="Function">console.groupCollapsed(object[, object, ...])</dt>
+				<dd>Like <i highlight="Function">console.group()</i>, but the block is initially collapsed.</dd>
+			</dl>;
+		},
+		groupEnd: function () {
+			return <dl>
+				<dt highlight="Function">console.groupEnd()</dt>
+				<dd>Closes the most recently opened block created by a call to <i highlight="Function">console.group()</i> or <i highlight="Function">console.groupCollapsed()</i></dd>
+			</dl>;
+		},
+
+		time: function (name) {
+			return <dl>
+				<dt highlight="Function">console.time(name)</dt>
+				<dd>Creates a new timer under the given name. Call <i highlight="Function">console.timeEnd(name)</i> with the same name to stop the timer and print the time elapsed.</dd>
+			</dl>;
+		},
+
+		timeEnd: function (name) {
+			return <dl>
+				<dt highlight="Function">console.timeEnd(name)</dt>
+				<dd>Stops a timer created by a call to <i highlight="Function">console.time(name)</i> and writes the time elapsed.</dd>
+			</dl>;
+		},
+
+		timeStamp: function (object) {
+			return <dl>
+				<dt highlight="Function">console.timeStamp([object])</dt>
+				<dd>Prints a timestamp, works like <i highlight="Function">console.log(object)</i>.</dd>
+			</dl>;
+		},
+
+		profile: function (title) {
+			return <dl>
+				<dt highlight="Function">console.profile([title])</dt>
+				<dd>Turns on the JavaScript profiler. The optional argument <i highlight="String">title</i> would contain the text to be printed in the header of the profile report.</dd>
+			</dl>;
+		},
+
+		profileEnd: function () {
+			return <dl>
+				<dt highlight="Function">console.profileEnd()</dt>
+				<dd>Turns off the JavaScript profiler and prints its report.</dd>
+			</dl>;
+		},
+
+		memoryProfile: function (title) {
+			return <dl>
+				<dt highlight="Function">console.memoryProfile([title])</dt>
+				<dd>Turns on memory profile.</dd>
+			</dl>;
+		},
+
+		memoryProfileEnd: function () {
+			return <dl>
+				<dt highlight="Function">console.memoryProfileEnd()</dt>
+				<dd>Turns off memory profile.</dd>
+			</dl>;
+		},
+
+		count: function (title) {
+			return <dl>
+				<dt highlight="Function">console.count([title])</dt>
+				<dd>Writes the number of times that the line of code where count was called was executed. The optional argument <i highlight="String">title</i> will print a message in addition to the number of the count.</dd>
+			</dl>;
+		},
+
+		exception: function (error_object) {
+			return <dl>
+				<dt highlight="Function">console.exception(error-object[, object, ...])</dt>
+				<dd>Prints an error message together with an interactive stack trace of JavaScript execution at the point where the exception occurred.</dd>
+			</dl>;
+		},
+
+		table: function (data, columns) {
+			return <dl>
+				<dt highlight="Function">console.table(data[, columns])</dt>
+				<dd>Allows to log provided data using tabular layout. The method takes one required parameter that represents table like data (array of arrays or list of objects). The other optional parameter can be used to specify columns and/or properties to be logged (see more <a href="http://www.softwareishard.com/blog/firebug/tabular-logs-in-firebug/" highlight="URL" title="Tabular logs in Firebug">here</a>).</dd>
+		</dl>;
+		}
+	}
 };
+
+function capitaliseFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function echoObj(obj, path) {
+	var output = <></>;
+	var path = arguments[1] ? arguments[1] : false;
+	if (path) {
+		var stack = path.split(".").filter(function(t) t);
+		var first = stack.shift();
+		if (!stack.length) {
+			if (obj.hasOwnProperty(first)) {
+				var type = capitaliseFirstLetter(typeof obj[first]);
+				switch ( type ) {
+					case "String" :
+					return <dl>
+					<dt highlight={type}>{first}</dt>
+					<dd>{obj[first]}</dd>
+					</dl>;
+					break;
+
+					case "Function" :
+					return obj[first]();
+					break;
+
+					case "Object" :
+					return output = <div style="padding:1em;">{echoObj(obj[first])}</div>;
+					break;
+				}
+			} else
+				return false;
+		} else {
+			return echoObj(obj[first], stack.join("."));
+		}
+	} else {
+		var type = capitaliseFirstLetter(typeof obj);
+		switch ( type ) {
+			case "Object" :
+			for (var prop in obj) {
+				let _output = echoObj(obj, prop);
+					output += <>{_output}</>;
+			}
+			return <div style="padding:1em;">{output}</div>;
+			break;
+
+			default :
+			return false;
+			break;
+		}
+	}
+}
+
+function completeObj(obj, prefix) {
+	var prefix = arguments[1] ? arguments[1]+"." : "";
+	var completions = [];
+	for (var prop in obj) {
+		var elem =obj[prop];
+		var type = capitaliseFirstLetter(typeof elem);
+		let path = prefix+prop;
+		switch ( type ) {
+			case "String" :
+			completions.push([path, elem, prop, "Object"]);
+			break;
+
+			case "Function" :
+			completions.push([path, elem().dd.text(), elem().dt.text(), "Function"]);
+			break;
+
+			case "Object" :
+			var _completions = completeObj(elem, path);
+			completions.push([path, path, prop, "Object"]);
+			_completions.forEach(function (item) {
+				completions.push(item);
+			});
+			break;
+
+			default :
+			break;
+		}
+	}
+	return completions;
+}
 
 // TODO: suspended
 function mappingKey(/*prefix=<Leader>,*/char) {
@@ -254,15 +513,6 @@ function execute(code) { // TODO: failed when firebug is suspendeded
 	cl.enter(context, code);
 }
 
-group.mappings.add(
-	[modes.NORMAL],
-	mappingKey('q'),
-	"Toggle QuickInfoBar",
-	function() {
-		Firebug.Inspector.toggleQuickInfoBox();
-	}
-);
-
 group.commands.add(["fireb[ug]", "fb"],
 	"fireb[ug] or fb: Use Pentadactyl CommandLine to Control Firebug!",
 	function (args) {
@@ -274,7 +524,7 @@ group.commands.add(["fireb[ug]", "fb"],
 		execute(code);
 	},
 	{
-		bang: true,
+		bang: true, // TODO: :fb! invoke last call, :fb! xxx works like shell history substitution
 		// completer: completion.javascript,
 		completer: function(context, args) {
 			if (!Firebug.currentContext) {
@@ -285,13 +535,12 @@ group.commands.add(["fireb[ug]", "fb"],
 			context.regenerate = true;
 			var wrapped = content.wrappedJSObject;
 			// update(wrapped, G); // NB: dangerous, plz never use it
-			// wrapped.console = console;
 			var localcontext = modules.newContext(wrapped, true);
 			var web = modules.JavaScript();
 			web.newContext = function newContext() modules.newContext(localcontext, true);
 
 			web.globals = [
-				[wrapped.console, "Console API"],
+				// [wrapped.console, "Console API"],
 				[G, "Command Line API"],
 			].concat(web.globals.filter(function ([global]) isPrototypeOf.call(global, wrapped)));
 
@@ -337,51 +586,54 @@ group.commands.add(["firebug-panel", "fbp"],
 	},
 	true
 );
+group.options.add(
+	["firebug-cite", "fbcite"],
+	"Show firebug help notes.",
+	"boolean",
+	true,
+	{
+
+	}
+);
 
 group.commands.add(["firebug-help", "fbh"],
 	"Firebug Command Line API tips!",
 	function (args) {
-		let output = <></>;
-		if (args.length==0) {
-			for ( var elem in G ) {
-				var e = G[elem];
-				if (typeof e == "string")
-					output += <><dl><dt highlight="String">{elem}</dt><dd>{e}</dd></dl></>;
-				else
-					output += <>{e()}</>;
+		let output = echoObj(G, args[0] || "");
+		if (output) {
+			if (options["firebug-cite"]) {
+				output = <>
+					<style type="text/css">
+					<![CDATA[
+						p.code_block {
+							border:1px dashed #ccc;
+							padding:1em;
+						}
+					]]></style>
+					{output}
+					<h2 style="border-top:1px solid #ccc;padding-top:1em;"><a href="http://getfirebug.com/wiki/index.php/Command_Line_API" title="Command Line API" highlight="URL">Command Line API</a></h2>
+					<p>The Firebug command line provides special functions for your convenience.</p>
+					<h3><a href="http://getfirebug.com/wiki/index.php/Console_API" highlight="URL">Console API</a></h3>
+					<p>Firebug adds a global variable named "console" to all web pages loaded in Firefox. This object contains many methods that allow you to write to the Firebug console to expose information that is flowing through your scripts.</p>
+					<h4>Implementation Notes</h4>
+					<p>The console is an object attached to the window object in the web page. In Firebug for Firefox the object is attached only if the Console panel is enabled. In Firebug lite, the console is attached if Lite is installed in the page.</p>
+				</>;
 			}
-		} else {
-			var e = G[args[0]];
-			if (G.hasOwnProperty(args[0]) && e) {
-				if (typeof e == "string")
-					output = <dl><dt highlight="String">{args[0]}</dt><dd>{e}</dd></dl>;
-				else
-					output = e();
-			} else {
-				dactyl.echoerr("Help item doesn't exist!");
-				return false;
-			}
-		}
-		dactyl.echo(<div style="padding:2em;width:600px;line-height:24px;white-space:normal;"><p><a href="http://getfirebug.com/wiki/index.php/Command_Line_API" title="Command Line API" highlight="URL">Command Line API</a></p>{output}</div>, commandline.FORCE_MULTILINE);
+			dactyl.echo(<div style="width:800px;white-space:normal;padding:1em 2em 2em;line-height:24px;">{output}</div>, commandline.FORCE_MULTILINE);
+		} else
+			dactyl.echoerr("Help item doesn't exist!", commandline.FORCE_SINGLELINE);
 	},
 	{
 		bang: true,
 		completer: function(context, args) {
-			context.process[1] = function(item, text) <span><b highlight={item.item[3]}>{item.item[2] + ": "}</b>{text}</span>;
+			context.process[1] = function(item, text) <span><b highlight={item.item[3]}>{item.item[2] + ": "}</b>{(text)}</span>;
 			context.compare = null;
-			let completions = [];
-			for (var elem in G) {
-				var e = G[elem];
-				var title = elem;
-				var desc = "";
-				if (typeof e == "string") {
-					desc = e;
-					completions.push([title, desc, elem, "String"]);
-				} else {
-					completions.push([title, e().dd.text(), e().dt.text(), "Function"]);
+			context.completions = completeObj(G);
+			context.filters = [
+				function (item) {
+					return (item.item[0].toUpperCase()).indexOf(args[0].toUpperCase()) + 1;
 				}
-			}
-			context.completions = completions;
+			]
 		},
 		literal: 1
 	},
@@ -397,7 +649,7 @@ group.commands.add(["firebug-load", "fbl"],
 			filename = io.cwd.path + File.PATH_SEP + filename;
 		filename = File.expandPath(filename);
 		var localFile = Components.classes["@mozilla.org/file/local;1"]
-                .createInstance(Components.interfaces.nsILocalFile);
+               .createInstance(Components.interfaces.nsILocalFile);
 		try {
 			localFile.initWithPath(filename);
 			if (localFile.isFile() && localFile.isReadable()) {
@@ -435,5 +687,3 @@ group.commands.add(["firebug-load", "fbl"],
 	},
 	true
 );
-
-// - tips for console api
