@@ -94,7 +94,7 @@ var G = {
 	},
 	monitor : function (fn) {
 		return <dl>
-			<dt highlight="Function">monitor</dt>
+			<dt highlight="Function">monitor(fn)</dt>
 			<dd>Turns on logging for all calls to a function.</dd>
 		</dl>;
 	},
@@ -218,7 +218,7 @@ var G = {
 		trace: function () {
 			return <dl>
 				<dt highlight="Function">console.trace()</dt>
-				<dd>Prints an interactive stack trace of JavaScript execution at the point where it is called.
+				<dd>Prints an interactive stack trace of JavaScript execution at the point where it is called.<p></p>
 
 				The stack trace details the functions on the stack, as well as the values that were passed as arguments to each function. You can click each function to take you to its source in the Script tab, and click each argument value to inspect it in the DOM or HTML tabs.</dd>
 			</dl>;
