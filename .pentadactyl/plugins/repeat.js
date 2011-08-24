@@ -168,7 +168,7 @@ let repeat = {
 			Array.slice(gBrowser.tabs).forEach(function(aTab) {
 					let panel = repeat.store.get(aTab.linkedPanel);
 					if (panel) {
-						let _l = <><tr style="text-align:center;"><td>{gBrowser.tabContainer.getIndexOfItem(aTab)+1}</td><td style="vertical-align:middle;"><img style="vertical-align:middle;" src={aTab.image || DEFAULT_FAVICON}/>{aTab.label}</td><td>{repeat.humanTime(panel[1])}</td></tr></>;
+						let _l = <><tr style="text-align:center;"><td>{gBrowser.tabContainer.getIndexOfItem(aTab)+1}</td><td style="vertical-align:middle;"><img style="vertical-align:middle;margin-right:5px;" src={aTab.image || DEFAULT_FAVICON}/>{aTab.label}</td><td>{repeat.humanTime(panel[1])}</td></tr></>;
 						l+=_l;
 					}
 			});
