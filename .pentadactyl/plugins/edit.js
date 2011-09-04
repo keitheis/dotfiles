@@ -3,7 +3,7 @@
 "use strict";
 XML.ignoreWhitespace = XML.prettyPrinting = false;
 
-const PATH_SEP = File.PATH_SEP;
+var PATH_SEP = File.PATH_SEP;
 let it = [];
 
 let edit = {
@@ -343,9 +343,9 @@ group.commands.add(["edi[t]", "ei"],
 						}
 					}
 					if (!opened)
-						localFile.launch();
+						openFile(localFile);
 				} else
-					localFile.launch();
+					openFile(localFile);
 			}
 		} else {
 			if (args.bang || !create)
@@ -388,9 +388,9 @@ group.commands.add(["edi[t]", "ei"],
 										}
 									}
 									if (!opened)
-										localFile.launch();
+										openFile(localFile)
 								} else
-									localFile.launch();
+									openFile(localFile)
 							} catch (e if e.result == Cr.NS_ERROR_FILE_ALREADY_EXISTS ) {
 								dactyl.echoerr(path + " already exists!", commandline.FORCE_SINGLELINE);
 							} catch (e) {
@@ -522,6 +522,38 @@ group.options.add(
 
 			context.title = ["editor", "description"];
 			context.completions = editors;
+		},
+	}
+);
+
+function openFile(file) {
+	if (file.isDirectory() && options["open-folder"]) {
+		var program = options["open-folder"];
+		// create an nsILocalFile for the executable
+		var exec = Components.classes["@mozilla.org/file/local;1"]
+		.createInstance(Components.interfaces.nsILocalFile);
+		exec.initWithPath(program);
+
+		var process = Components.classes["@mozilla.org/process/util;1"]
+		.createInstance(Components.interfaces.nsIProcess);
+		process.init(exec);
+
+		var args = [file.path];
+		process.run(false, args, args.length);
+		return true;
+	}
+	file.launch();
+}
+
+group.options.add(
+	["open-folder", "opfl"],
+	"Open folder by custom program.",
+	"string",
+	"",
+	{
+		validator: function() true,
+		completer: function(context, args) {
+			completion.file(context);
 		},
 	}
 );
