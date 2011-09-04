@@ -545,7 +545,7 @@ function openFile(file) {
 	file.launch();
 }
 
-group.options.add(
+group.options.add( // TODO: PATH environment
 	["open-folder", "opfl"],
 	"Open folder by custom program.",
 	"string",
