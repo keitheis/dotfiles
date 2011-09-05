@@ -545,7 +545,7 @@ group.commands.add(["fireb[ug]", "fb"],
 			web.globals = [
 				[G, "Command Line API"],
 				[content.wrappedJSObject, "Current Page"],
-			].concat(web.globals);
+			].concat(web.globals.filter(function ([global]) isPrototypeOf.call(global, content.wrappedJSObject) || isPrototypeOf.call(global, G)));
 
 			if (!isPrototypeOf.call(modules.jsmodules, content.wrappedJSObject))
 				web.toplevel = content.wrappedJSObject;
