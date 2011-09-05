@@ -353,6 +353,8 @@ function echoObj(obj, path) {
 		switch ( type ) {
 			case "Object" :
 			for (var prop in obj) {
+				if (!obj.hasOwnProperty(prop))
+					continue;
 				let _output = echoObj(obj, prop);
 					output += <>{_output}</>;
 			}
@@ -370,6 +372,8 @@ function completeObj(obj, prefix) {
 	var prefix = arguments[1] ? arguments[1]+"." : "";
 	var completions = [];
 	for (var prop in obj) {
+		if (!obj.hasOwnProperty(prop))
+			continue;
 		var elem =obj[prop];
 		var type = capitaliseFirstLetter(typeof elem);
 		let path = prefix+prop;
@@ -533,16 +537,24 @@ group.commands.add(["fireb[ug]", "fb"],
 				Firebug.minimizeBar();
 			}
 			context.regenerate = true;
-			var wrapped = content.wrappedJSObject;
-			// update(wrapped, G); // NB: dangerous, plz never use it
-			var localcontext = modules.newContext(wrapped, true);
+			// update(content.wrappedjsobject, G); // NB: dangerous, plz never use it
+			var _context = modules.newContext(content.wrappedJSObject, false);
 			var web = modules.JavaScript();
-			web.newContext = function newContext() modules.newContext(localcontext, true);
+			web.newContext = function newContext() modules.newContext(_context, false);
 
 			web.globals = [
-				// [wrapped.console, "Console API"],
 				[G, "Command Line API"],
-			].concat(web.globals.filter(function ([global]) isPrototypeOf.call(global, wrapped)));
+				[content.wrappedJSObject, "Current Page"],
+			].concat(web.globals);
+
+			if (!isPrototypeOf.call(modules.jsmodules, content.wrappedJSObject))
+				web.toplevel = content.wrappedJSObject;
+
+			if (!isPrototypeOf.call(window, content.wrappedJSObject))
+				web.window = content.wrappedJSObject;
+
+			if (web.globals.slice(2).some(function ([global]) global === content.wrappedJSObject))
+				web.globals.splice(1);
 
 			context.fork("js", 0, web, "complete");
 		},
