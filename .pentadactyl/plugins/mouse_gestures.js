@@ -279,7 +279,7 @@ group.options.add(["mgrocker"],
 );
 
 group.options.add(["mgmsgcontainer"],
-  "",
+  "Gesture tips",
   "string",
   "statusline",
   {
