@@ -11,7 +11,7 @@ var shortenURL = function (args) {
 	var req = new XMLHttpRequest();
 	var callback = function (data) {
 		if (invert)
-			dactyl.clipboardWrite(data.trim(), true);
+			dactyl.clipboardWrite(data.trim(), true, 'selection');
 		else
 			dactyl.echomsg(data.trim(), commandline.FORCE_SINGLELINE);
 	};
