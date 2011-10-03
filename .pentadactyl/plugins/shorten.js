@@ -158,7 +158,10 @@ group.options.add(["shorten-engine", "shte"],
 			["b","Bitly helps you share, track, and analyze your links."],
 			["g", "Google URL Shortener"],
 			["i", "is.gd - a URL shortener. Mmmm, tasty URLs!"]
-		]
+		],
+		validator: function (value) {
+			return ["b", "g", "i"].indexOf(value) >= 0;
+		}
 	}
 );
 
