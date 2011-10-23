@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Sun 23 Oct 2011 01:04:54 PM CST
-// @Last Change: Sun 23 Oct 2011 05:54:36 PM CST
-// @Revision:    73
+// @Last Change: Sun 23 Oct 2011 06:08:15 PM CST
+// @Revision:    76
 // @Description:
 // @Usage:
 // @TODO:
@@ -70,3 +70,7 @@ group.options.add(["tabs-on-statusline", "tos"],
 
 TOS.setup();
 tabs.updateTabCount()
+
+function onUnload() { // :rehash, exit firefox/current window, disable pentadactyl extension
+	TOS.restore();
+}
