@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Sun 23 Oct 2011 01:04:54 PM CST
-// @Last Change: Sun 23 Oct 2011 04:27:14 PM CST
-// @Revision:    67
+// @Last Change: Sun 23 Oct 2011 05:03:26 PM CST
+// @Revision:    71
 // @Description:
 // @Usage:
 // @TODO:
@@ -61,6 +61,7 @@ group.options.add(["tabs-on-statusline", "tos"],
 				} else {
 					TOS.restore();
 				}
+				tabs.updateTabCount()
 			}
 			return value;
         }
@@ -68,3 +69,4 @@ group.options.add(["tabs-on-statusline", "tos"],
 );
 
 TOS.setup();
+tabs.updateTabCount()
