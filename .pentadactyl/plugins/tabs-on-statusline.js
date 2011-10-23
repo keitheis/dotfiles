@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Sun 23 Oct 2011 01:04:54 PM CST
-// @Last Change: Sun 23 Oct 2011 05:03:26 PM CST
-// @Revision:    71
+// @Last Change: Sun 23 Oct 2011 05:09:55 PM CST
+// @Revision:    72
 // @Description:
 // @Usage:
 // @TODO:
@@ -17,7 +17,7 @@ let TOS = {
 		TOS.tabsToolbar_prev = TOS.tabsToolbar.previousSibling;
 		TOS.tabsToolbar_next = TOS.tabsToolbar.nextSibling;
 		TOS.widget = util.xmlToDom(
-			<toolbox xmlns={XUL} highlight="TOS" id="dactyl-statusline-field-tos" align="start"/>,
+			<toolbox xmlns={XUL} highlight="TOS" id="dactyl-statusline-field-tos" align="stretch"/>,
 			document);
 		statusline.widgets.url.parentNode.insertBefore(TOS.widget, statusline.widgets.url.nextSibling);
 		commandline.widgets.addElement({
