@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Sun 23 Oct 2011 01:04:54 PM CST
-// @Last Change: Sun 23 Oct 2011 05:09:55 PM CST
-// @Revision:    72
+// @Last Change: Sun 23 Oct 2011 05:54:36 PM CST
+// @Revision:    73
 // @Description:
 // @Usage:
 // @TODO:
@@ -43,9 +43,9 @@ TOS.init();
 highlight.loadCSS(<![CDATA[
 			StatusCmdLine {-moz-box-align:center;}
 			StatusCmdLine>#TabsToolbar {background-color:transparent !important;background-image:none !important;-moz-appearance:none !important;}
-			'StatusLineBroken [dactyl|highlight*="Status"]' {background-color:transparent !important;color:#313633 !important;}
-			'StatusLineExtended [dactyl|highlight*="Status"]' {background-color:transparent !important;color:#313633 !important;}
-			'StatusLineSecure [dactyl|highlight*="Status"]' {background-color:transparent !important;color:#313633 !important;}
+			StatusLineBroken [dactyl|highlight*="Status"] {background-color:transparent !important;color:#313633 !important;}
+			StatusLineExtended [dactyl|highlight*="Status"] {background-color:transparent !important;color:#313633 !important;}
+			StatusLineSecure [dactyl|highlight*="Status"] {background-color:transparent !important;color:#313633 !important;}
 ]]>, true);
 
 // Options
