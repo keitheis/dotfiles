@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Sun 23 Oct 2011 01:04:54 PM CST
-// @Last Change: Sun 23 Oct 2011 06:08:15 PM CST
-// @Revision:    76
+// @Last Change: Sun 23 Oct 2011 06:30:35 PM CST
+// @Revision:    92
 // @Description:
 // @Usage:
 // @TODO:
@@ -16,9 +16,12 @@ let TOS = {
 		TOS.tabsToolbar_parent = TOS.tabsToolbar.parentNode;
 		TOS.tabsToolbar_prev = TOS.tabsToolbar.previousSibling;
 		TOS.tabsToolbar_next = TOS.tabsToolbar.nextSibling;
-		TOS.widget = util.xmlToDom(
-			<toolbox xmlns={XUL} highlight="TOS" id="dactyl-statusline-field-tos" align="stretch"/>,
-			document);
+		TOS.widget = document.getElementById('dactyl-statusline-field-tos');
+		if (!TOS.widget) {
+			TOS.widget = util.xmlToDom(
+				<toolbox xmlns={XUL} highlight="TOS" id="dactyl-statusline-field-tos" align="stretch"/>,
+				document);
+		}
 		statusline.widgets.url.parentNode.insertBefore(TOS.widget, statusline.widgets.url.nextSibling);
 		commandline.widgets.addElement({
 				name: "tos",
@@ -43,9 +46,9 @@ TOS.init();
 highlight.loadCSS(<![CDATA[
 			StatusCmdLine {-moz-box-align:center;}
 			StatusCmdLine>#TabsToolbar {background-color:transparent !important;background-image:none !important;-moz-appearance:none !important;}
-			StatusLineBroken [dactyl|highlight*="Status"] {background-color:transparent !important;color:#313633 !important;}
-			StatusLineExtended [dactyl|highlight*="Status"] {background-color:transparent !important;color:#313633 !important;}
-			StatusLineSecure [dactyl|highlight*="Status"] {background-color:transparent !important;color:#313633 !important;}
+			StatusLineBroken [dactyl|highlight*="Status"] {background-color:transparent;color:#313633;}
+			StatusLineExtended [dactyl|highlight*="Status"] {background-color:transparent;color:#313633;}
+			StatusLineSecure [dactyl|highlight*="Status"] {background-color:transparent;color:#313633;}
 ]]>, true);
 
 // Options
@@ -68,8 +71,10 @@ group.options.add(["tabs-on-statusline", "tos"],
     }
 );
 
-TOS.setup();
-tabs.updateTabCount()
+if (options["tabs-on-statusline"]) {
+	TOS.setup();
+	tabs.updateTabCount()
+}
 
 function onUnload() { // :rehash, exit firefox/current window, disable pentadactyl extension
 	TOS.restore();
