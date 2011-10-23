@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Sun 23 Oct 2011 01:04:54 PM CST
-// @Last Change: Sun 23 Oct 2011 03:16:49 PM CST
-// @Revision:    44
+// @Last Change: Sun 23 Oct 2011 03:40:17 PM CST
+// @Revision:    48
 // @Description:
 // @Usage:
 // @TODO:
@@ -18,7 +18,17 @@ let TOS = {
 		TOS.tabsToolbar_next = TOS.widget.nextSibling;
 	},
 	setup: function() {
-		statusline.widgets.url.parentNode.insertBefore(TOS.widget, statusline.widgets.url.nextSibling);
+		let widget = util.xmlToDom(
+			<hbox xmlns={XUL} id="dactyl-statusline-field-tos" flex="1"/>,
+			document);
+		widget.appendChild(TOS.widget);
+		statusline.widgets.url.parentNode.insertBefore(widget, statusline.widgets.url.nextSibling);
+		commandline.widgets.addElement({
+				name: "tos",
+				getGroup: function () this.statusbar,
+				getValue: function () statusline.visible && options["tabs-on-statusline"] && (options["showtabline"] !== "never"),
+				noValue: true
+		});
 	},
 	restore: function() {
 		if (TOS.tabsToolbar_prev)
