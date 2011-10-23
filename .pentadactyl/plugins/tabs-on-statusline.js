@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Sun 23 Oct 2011 01:04:54 PM CST
-// @Last Change: Sun 23 Oct 2011 03:40:17 PM CST
-// @Revision:    48
+// @Last Change: Sun 23 Oct 2011 04:12:47 PM CST
+// @Revision:    63
 // @Description:
 // @Usage:
 // @TODO:
@@ -12,17 +12,14 @@
 
 let TOS = {
 	init: function() {
-		TOS.widget = document.getElementById("TabsToolbar");
-		TOS.tabsToolbar_parent = TOS.widget.parentNode;
-		TOS.tabsToolbar_prev = TOS.widget.previousSibling;
-		TOS.tabsToolbar_next = TOS.widget.nextSibling;
-	},
-	setup: function() {
-		let widget = util.xmlToDom(
-			<hbox xmlns={XUL} id="dactyl-statusline-field-tos" flex="1"/>,
+		TOS.tabsToolbar = document.getElementById("TabsToolbar");
+		TOS.tabsToolbar_parent = TOS.tabsToolbar.parentNode;
+		TOS.tabsToolbar_prev = TOS.tabsToolbar.previousSibling;
+		TOS.tabsToolbar_next = TOS.tabsToolbar.nextSibling;
+		TOS.widget = util.xmlToDom(
+			<toolbox xmlns={XUL} highlight="TOS" id="dactyl-statusline-field-tos" align="center"/>,
 			document);
-		widget.appendChild(TOS.widget);
-		statusline.widgets.url.parentNode.insertBefore(widget, statusline.widgets.url.nextSibling);
+		statusline.widgets.url.parentNode.insertBefore(TOS.widget, statusline.widgets.url.nextSibling);
 		commandline.widgets.addElement({
 				name: "tos",
 				getGroup: function () this.statusbar,
@@ -30,12 +27,15 @@ let TOS = {
 				noValue: true
 		});
 	},
+	setup: function() {
+		TOS.widget.appendChild(TOS.tabsToolbar);
+	},
 	restore: function() {
 		if (TOS.tabsToolbar_prev)
-			return TOS.tabsToolbar_parent.insertBefore(TOS.widget, TOS.tabsToolbar_prev.nextSibling);
+			return TOS.tabsToolbar_parent.insertBefore(TOS.tabsToolbar, TOS.tabsToolbar_prev.nextSibling);
 		if (TOS.tabsToolbar_next)
-			return TOS.tabsToolbar_parent.insertBefore(TOS.widget, TOS.tabsToolbar_next);
-		return TOS.tabsToolbar_parent.appendChild(TOS.widget);
+			return TOS.tabsToolbar_parent.insertBefore(TOS.tabsToolbar, TOS.tabsToolbar_next);
+		return TOS.tabsToolbar_parent.appendChild(TOS.tabsToolbar);
 	}
 };
 TOS.init();
