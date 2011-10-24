@@ -172,37 +172,6 @@ let INFO =
     </p></description>
   </item>
 
-  <item lang="en-US">
-    <tags>'caret_hint_swap_key', 'chwk'</tags>
-    <spec>'chwk', 'caret_hint_swap_key'</spec>
-    <type>string</type>
-    <default>'o'</default>
-    <description><p>
-      The key mapping for Visual-mode.
-      Swap caret position head to tail.
-    </p></description>
-  </item>
-  <item lang="ja">
-    <tags>'caret_hint_swap_key', 'chwk'</tags>
-    <spec>'chwk', 'caret_hint_swap_key'</spec>
-    <type>string</type>
-    <default>'o'</default>
-    <description><p>
-      VISUAL モード用のキーマッピング
-      キャレットの位置を交換する(先頭 ⇔ 後尾)
-    </p></description>
-  </item>
-  <item lang="zh-CN">
-    <tags>'caret_hint_swap_key', 'chwk'</tags>
-    <spec>'chwk', 'caret_hint_swap_key'</spec>
-    <type>string</type>
-    <default>'o'</default>
-    <description><p>
-      Visual 模式。
-      交换光标的位置。
-    </p></description>
-  </item>
-
   <note lang="en-US">If apply empty string ('') to these variables, these mapping or mode are not enabled.</note>
   <note lang="ja">これらの値に空文字列を与えれば、マッピングやモードは有効にされません。</note>
   <note lang="zh-CN">如果以上选项设置为空，则禁用以上模式和键绑定。</note>
@@ -392,26 +361,6 @@ group.options.add(["caret_hint_select_tail_key", "chstk"],
         delete hints.modes[options["caret_hint_select_tail_key"]];
         if (value)
           CH.setup({selectTailMode:value}); //
-      }
-      return value;
-    }
-  }
-);
-group.options.add(["caret_hint_swap_key", "chwk"],
-  "Swap caret position head to tail.",
-  "string",
-  "o",
-  {
-    validator: function (value) value.length > 0,
-    setter: function (value) {
-      if (value) { // FIXME: check key doesn't mapped first, remove unused mapping
-        group.mappings.add(
-          [modes.VISUAL],
-          [value],
-          'Swap caret position head to tail',
-          CH.swapCaret,
-          {}
-        );
       }
       return value;
     }
