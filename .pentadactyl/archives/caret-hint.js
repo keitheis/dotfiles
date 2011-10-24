@@ -236,23 +236,17 @@ let CH = {
       sel.removeAllRanges();
       r.selectNodeContents(elem);
 
-      if (select) {
-        modes.pop(modes.VISUAL);
-        modes.pop(modes.CARET);
-        modes.push(modes.NORMAL);
-        modes.push(modes.CARET);
-        modes.push(modes.VISUAL);
-      } else {
+      if (!select) {
         if (head) {
           r.setEnd(r.startContainer, r.startOffset); // FIXME: wrong cursor location on selectTailMode
         } else {
           r.setStart(r.endContainer, r.endOffset);
         }
-        modes.pop(modes.VISUAL);
-        modes.pop(modes.CARET);
-        modes.push(modes.NORMAL);
-        modes.push(modes.CARET);
       };
+      modes.reset();
+      modes.push(modes.CARET);
+      if (select)
+        modes.push(modes.VISUAL);
 
       sel.addRange(r);
 
