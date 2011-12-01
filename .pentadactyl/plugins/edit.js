@@ -1,6 +1,6 @@
 // dactyl.assert(!("LOADED_EDIT_JS" in userContext), (new Error).fileName + " has already been loaded!");
 // userContext.LOADED_EDIT_JS = true;
-"use strict";
+// "use strict";
 XML.ignoreWhitespace = XML.prettyPrinting = false;
 
 var PATH_SEP = File.PATH_SEP;
