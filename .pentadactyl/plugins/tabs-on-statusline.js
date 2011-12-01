@@ -31,6 +31,7 @@ let TOS = {
 		});
 	},
 	setup: function() {
+		prefs.safeSet("browser.tabs.drawInTitlebar", false);
 		TOS._widget.appendChild(TOS._tabsToolbar);
 	},
 	restore: function() {
