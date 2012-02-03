@@ -9,7 +9,8 @@ do
 done
 
 _arguments \
-	"--here[Set up the first window in the current window.]" \
+	"--edit[Edit the YAML layout file instead of using it.]" \
 	"--help[This help]" \
+	"--here[Set up the first window in the current window.]" \
 	'--layout[Use a specific layout file, instead of ~/.teamocil/<layout>.yml]:specific layout:_files' \
 	'*:files:($files)'
