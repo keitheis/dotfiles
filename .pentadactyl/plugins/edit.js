@@ -266,29 +266,24 @@ group.commands.add(["edi[t]", "ei"],
 				path = edit.files[0]["path"];
 			else
 				path = edit.RC;
-		} else
+		} else if (edit.isAbsolutePath(args[0])) {
 			path = args[0];
-
-		if (commandline.completionList.selected) {
-			let ctx = commandline.completionList.selected[0];
-			let idx = commandline.completionList.selected[1];
-			path = ctx.items[idx].path;
-			create = true;
 		} else {
-			if (!commandline.completionList.context.activeContexts.length) // 未弹出自动补全窗口
-				; // do nth
-			else { // 没有选择自动补全
+			path = args[0];
+			if (commandline.completionList.selected) {
+				let ctx = commandline.completionList.selected[0];
+				let idx = commandline.completionList.selected[1];
+				path = ctx.items[idx].path;
+				create = true;
+			} else {
 				let items = commandline.completionList.context.activeContexts[0].items
 				create = true;
-				if (items.length >= 1) // 补全列表中只有一个可选项，默认使用。
+				if (items.length >= 1 && (typeof items[0].path == "string")) // 补全列表中只有一个可选项，默认使用。
 					path = items[0].path;
 				else
 					create = false;
 			}
 		}
-
-		if (edit.isAbsolutePath(args[0]))
-			path = args[0] || "";
 
 		path = File.expandPath(path);
 
