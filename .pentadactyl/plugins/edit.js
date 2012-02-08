@@ -215,23 +215,16 @@ function cpt(context, args) {
 				context.title[0] = arg.match(/^(?:.*[\/\\])?/)[0];
 		});
 	} else {
-		dirs.forEach(function(dir, idx) {
-				let aFile = new File(dir.path+PATH_SEP+arg);
-				if (aFile.exists() && aFile.isDirectory() && (arg === "" || File.expandPath(arg[arg.length -1]) === File.expandPath(PATH_SEP))) {
-					context.fork(dir.path, 0, this, function (context) {
-							completion.file(context, false, aFile.path+PATH_SEP);
-							context.title[0] = aFile.path+PATH_SEP;
-							context.filter = "";
-							context.offset = arg.length + context.offset;
-					});
-				} else {
-					context.fork(dir.path, 0, this, function (context) {
-							completion.file(context, false, aFile.path);
-							context.title[0] = aFile.parent.path + PATH_SEP;
-							context.filter = aFile.leafName;
-							context.offset = offset + arg.length - aFile.leafName.length;
-					});
-				}
+		dirs.forEach(function(dirObj, idx) {
+			let dir = dirObj.path;
+			context.fork(dir, 0, this, function (context) {
+				let dirPart = arg.match(/^(?:.*[\/\\])?/)[0];
+				context.advance(dirPart.length);
+				dir = dir.replace("/+$", "") + "/";
+				completion.file(context, true, dir + arg);
+				context.title[0] = dir + dirPart;
+				context.keys.text = function (f) this.path.substr(dir.length+dirPart.length);
+			});
 		});
 	}
 
@@ -402,7 +395,7 @@ group.commands.add(["edi[t]", "ei"],
 		argCount: "?",
 		bang: true,
 		completer: function (context, args) cpt(context, args), // TODO: expandPath
-		// literal: 0
+		literal: 0
 	},
 	true
 );
