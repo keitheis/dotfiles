@@ -200,7 +200,7 @@ function cpt(context, args) {
 				context.title= ["scriptnames", "path"];
 				let completions = [];
 				context.compare = null;
-				io._scriptNames.forEach(function(filename) {
+				Object.keys(io._scriptNames).forEach(function(filename) {
 						completions.push({filename:filename, basename:(new File(filename)).leafName});
 				});
 				context.completions = completions;
