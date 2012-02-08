@@ -408,7 +408,7 @@ group.commands.add(["edi[t]", "ei"],
 		argCount: "?",
 		bang: true,
 		completer: function (context, args) cpt(context, args), // TODO: expandPath
-		literal: 0
+		// literal: 0
 	},
 	true
 );
