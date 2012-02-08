@@ -4,7 +4,6 @@
 XML.ignoreWhitespace = XML.prettyPrinting = false;
 
 var PATH_SEP = File.PATH_SEP;
-let it = [];
 
 let edit = {
 	get RC() edit._RC || edit._setRC(),
@@ -255,7 +254,6 @@ function cpt(context, args) {
 				return (new File(item.item.path)).leafName.toLowerCase().indexOf(arg.toLowerCase()) == 0;
 			}
 	});
-	it = context.allItems;
 }
 
 group.commands.add(["edi[t]", "ei"],
@@ -271,25 +269,26 @@ group.commands.add(["edi[t]", "ei"],
 		} else
 			path = args[0];
 
-		if (commandline.completionList._selIndex >= 0) {
-			path = it.items[commandline.completionList._selIndex].path; // FIXME: dirty hack
+		if (commandline.completionList.selected) {
+			let ctx = commandline.completionList.selected[0];
+			let idx = commandline.completionList.selected[1];
+			path = ctx.items[idx].path;
 			create = true;
 		} else {
-			if (typeof it.items === "undefined") // 未弹出自动补全窗口
+			if (!commandline.completionList.context.activeContexts.length) // 未弹出自动补全窗口
 				; // do nth
 			else { // 没有选择自动补全
+				let items = commandline.completionList.context.activeContexts[0].items
 				create = true;
-				if (it.items.length == 1) // 补全列表中只有一个可选项，默认使用。
-					path = it.items[0].path;
-				else if (it.items.length == 0)
+				if (items.length >= 1) // 补全列表中只有一个可选项，默认使用。
+					path = items[0].path;
+				else
 					create = false;
-				else // 多于1项，取第一项
-					path = it.items[0].path;
 			}
 		}
 
 		if (edit.isAbsolutePath(args[0]))
-			path = args[0];
+			path = args[0] || "";
 
 		path = File.expandPath(path);
 
