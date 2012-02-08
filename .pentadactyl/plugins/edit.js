@@ -212,25 +212,25 @@ function cpt(context, args) {
 	if (edit.isAbsolutePath(arg)) {
 		let dir = {path:arg, description:"Absolute Path"};
 		context.fork(dir.path, 0, this, function (context) {
-				context.title[0] = arg.match(/^(?:.*[\/\\])?/)[0];
 				completion.file(context, false, dir.path);
+				context.title[0] = arg.match(/^(?:.*[\/\\])?/)[0];
 		});
 	} else {
 		dirs.forEach(function(dir, idx) {
 				let aFile = new File(dir.path+PATH_SEP+arg);
 				if (aFile.exists() && aFile.isDirectory() && (arg === "" || File.expandPath(arg[arg.length -1]) === File.expandPath(PATH_SEP))) {
 					context.fork(dir.path, 0, this, function (context) {
+							completion.file(context, false, aFile.path+PATH_SEP);
 							context.title[0] = aFile.path+PATH_SEP;
 							context.filter = "";
 							context.offset = arg.length + context.offset;
-							completion.file(context, false, aFile.path+PATH_SEP);
 					});
 				} else {
 					context.fork(dir.path, 0, this, function (context) {
+							completion.file(context, false, aFile.path);
 							context.title[0] = aFile.parent.path + PATH_SEP;
 							context.filter = aFile.leafName;
 							context.offset = offset + arg.length - aFile.leafName.length;
-							completion.file(context, false, aFile.path);
 					});
 				}
 		});
