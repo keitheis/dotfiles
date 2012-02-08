@@ -240,6 +240,8 @@ function cpt(context, args) {
 	context.keys = {
 		text: function (item) "opds" in item ? item.path : (new File(item.path)).leafName,
 		description: function (item) "opds" in item ? item.raw : item.path,
+		icon: function (item) "opds" in item ? "resource://gre/res/html/folder.png"
+									  : "moz-icon://" + (new File(item.path)).leafName,
 		path: function (item) item.path
 	};
 	context.filters = [];
@@ -767,3 +769,4 @@ package in browser or archiver.
 // res://
 // 'wildcase'
 // -b base?
+
