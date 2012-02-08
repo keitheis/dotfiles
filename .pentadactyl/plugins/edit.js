@@ -204,7 +204,12 @@ function cpt(context, args) {
 						completions.push({filename:filename, basename:(new File(filename)).leafName});
 				});
 				context.completions = completions;
-				context.keys = {text: 'basename', description:'filename',path: 'filename'};
+				context.keys = {
+					text: 'basename',
+					description:'filename',
+					path: 'filename',
+					icon: function (item) "moz-icon://" + item.filename
+				};
 		});
 	}
 
