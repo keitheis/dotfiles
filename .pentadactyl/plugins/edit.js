@@ -186,7 +186,6 @@ let edit = {
 	}
 }
 function cpt(context, args) {
-	let offset = context.offset;
 	let dirs = edit.dirs;
 	let places = edit.files.concat(dirs);
 
