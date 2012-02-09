@@ -209,6 +209,9 @@ function cpt(context, args) {
 					path: 'filename',
 					icon: function (item) "moz-icon://" + item.filename
 				};
+				context.filters = [function (item) {
+					return item.text.toLowerCase().indexOf(arg.toLowerCase()) + 1;
+				}];
 		});
 	}
 
@@ -217,6 +220,9 @@ function cpt(context, args) {
 		context.fork(dir.path, 0, this, function (context) {
 				completion.file(context, false, dir.path);
 				context.title[0] = arg.match(/^(?:.*[\/\\])?/)[0];
+				context.filters[0] = function (item) {
+					return item.text.toLowerCase().indexOf(context.filter.toLowerCase()) + 1;
+				};
 		});
 	} else {
 		dirs.forEach(function(dirObj, idx) {
@@ -228,6 +234,9 @@ function cpt(context, args) {
 				completion.file(context, true, dir + arg);
 				context.title[0] = dir + dirPart;
 				context.keys.text = function (f) this.path.substr(dir.length+dirPart.length);
+				context.filters[0] = function (item) {
+					return item.text.toLowerCase().indexOf(context.filter.toLowerCase()) + 1;
+				};
 			});
 		});
 	}
@@ -246,9 +255,9 @@ function cpt(context, args) {
 	context.filters.push(function (item) {
 			// FIXME: item.item
 			if (item.item.opds) {
-				return item.item.path.toLowerCase().indexOf(arg.toLowerCase()) == 0 || item.item.raw.toLowerCase().indexOf(arg.toLowerCase()) == 0;
+				return item.item.path.toLowerCase().indexOf(arg.toLowerCase()) >= 0 || item.item.raw.toLowerCase().indexOf(arg.toLowerCase()) >= 0;
 			} else {
-				return (new File(item.item.path)).leafName.toLowerCase().indexOf(arg.toLowerCase()) == 0;
+				return (new File(item.item.path)).leafName.toLowerCase().indexOf(arg.toLowerCase()) >= 0;
 			}
 	});
 }
