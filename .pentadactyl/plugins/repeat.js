@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Sat 06 Aug 2011 03:31:12 PM CST
-// @Last Change: Fri 19 Aug 2011 03:35:53 AM CST
-// @Revision:    419
+// @Last Change: Thu 09 Feb 2012 07:09:55 PM CST
+// @Revision:    420
 // @Description:
 // @Usage:
 // @TODO:
@@ -19,7 +19,7 @@ let repeat = {
 		let tab = gBrowser.mCurrentTab;
 		if (typeof arguments[0] !== "undefined") {
 			let linkedPanel = arguments[0];
-			Array.slice(gBrowser.tabs).forEach(function (aTab) {
+			Array.forEach(gBrowser.tabs, function (aTab) {
 				if (aTab.linkedPanel == linkedPanel)
 					tab = aTab;
 			})
@@ -153,7 +153,7 @@ let repeat = {
 
 	generate: function(context, args) {
 		if (repeat.store.keys().length) {
-			let activeTabs = Array.slice(gBrowser.tabs).filter(function(aTab) {
+			let activeTabs = Array.filter(gBrowser.tabs, function(aTab) {
 					let panel = repeat.store.get(aTab.linkedPanel);
 					if (panel)
 						return true;
@@ -165,7 +165,7 @@ let repeat = {
 	listRepeatings: function() { // TODO: command
 		if (repeat.store.keys().length) {
 			let l = <></>;
-			Array.slice(gBrowser.tabs).forEach(function(aTab) {
+			Array.forEach(gBrowser.tabs, function(aTab) {
 					let panel = repeat.store.get(aTab.linkedPanel);
 					if (panel) {
 						let _l = <><tr style="text-align:center;"><td>{gBrowser.tabContainer.getIndexOfItem(aTab)+1}</td><td style="vertical-align:middle;"><img style="vertical-align:middle;margin-right:5px;" src={aTab.image || DEFAULT_FAVICON}/>{aTab.label}</td><td>{repeat.humanTime(panel[1])}</td></tr></>;
@@ -231,7 +231,7 @@ group.commands.add(["rep[eat]", "rep"],
 		completer: function(context, args) {
 			if (args.bang) {
 				context.filters.push(function(item) {
-						return Array.slice(repeat.store.keys()).some(function(linkedPanel) {
+						return Array.some(repeat.store.keys(), function(linkedPanel) {
 						if (item.item.tab.linkedPanel == linkedPanel)
 							return true;
 						return false;
@@ -288,7 +288,7 @@ else {
  * 移除当前所有正在运行的任务
  */
 function onUnload() { // :rehash, exit firefox/current window, disable pentadactyl extension
-	Array.slice(repeat.store.keys()).forEach(function (linkedPanel) {
+	Array.forEach(repeat.store.keys(), function (linkedPanel) {
 		let panel = repeat.store.get(linkedPanel);
 		window.clearInterval(panel[0]);
 	});

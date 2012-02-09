@@ -379,7 +379,7 @@ function list() {
         break;
 
         default :
-        Array.slice(item[0]).forEach(function (char) {
+        Array.forEach(item[0], function (char) {
             human += m[char];
         });
         break;
