@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Mon 27 Jun 2011 09:59:53 PM CST
-// @Last Change: Mon 01 Aug 2011 01:41:13 AM CST
-// @Revision:    116
+// @Last Change: Sat 11 Feb 2012 10:39:52 PM CST
+// @Revision:    117
 // @Description:
 // @Usage:
 // @TODO:
@@ -88,20 +88,6 @@ function tab(str, modifiers, silent) {
 
         switch (command.name) {
             case "tab" :
-            break;
-
-            case "dict" :
-            case "dictd" :
-            case "dictg" :
-            case "dictq" :
-            case "dicty" :
-            case "dictz" :
-            case "dictw" : // placeholder, works for wikipedia
-            args["-t"] = true;
-            break;
-
-            case "edit" :
-            args.bang = true;
             break;
 
             default :
