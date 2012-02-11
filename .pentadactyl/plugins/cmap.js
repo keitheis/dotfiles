@@ -39,7 +39,7 @@ function execute(str, modifiers, silent) {
             case "winopen" :
             if (args[0]) {
                 var urls = args[0].split(/\s+\|\s+/).map(function (str) {
-                        return str.replace(/^(?:www\.)?(.+?)(?:\.com)?$/g , "www.$1.com");
+                        return str.replace(/^(?:www\.)?(.+?)(?:\.com)?$/g , "$1.com");
                 });
                 var seps = args[0].match(/\s+\|\s+/g) || [];
                 seps.push("");
