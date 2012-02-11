@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Sat 06 Aug 2011 03:31:12 PM CST
-// @Last Change: Thu 09 Feb 2012 07:09:55 PM CST
-// @Revision:    420
+// @Last Change: Thu 09 Feb 2012 08:32:56 PM CST
+// @Revision:    423
 // @Description:
 // @Usage:
 // @TODO:
@@ -68,7 +68,11 @@ let repeat = {
 	init: function(args) {
 		if (args["-l"])
 			return repeat.listRepeatings();
+
 		let interval = (parseInt(args["-i"], 10) || options["repeat-interval"] || options.get("repeat-interval").defaultValue) * 1000; // unit: seconds
+		let count = parseInt(args.count, 10);
+		if (count > 0)
+			interval = count * 1000;
 
 		let force = args["-f"] || false;
 		if (!force && interval <= 3000) {
@@ -249,7 +253,7 @@ group.commands.add(["rep[eat]", "rep"],
 			},
 			{
 				names: ["-b"],
-				description: "执行情形, 如果此选项为空, 则包括所有!",
+				description: "执行场合, 如果此选项为空, 则两种场合均包含!",
 				type: CommandOption.STRING,
 				completer: function(context, arg) [
 					["background", "后台执行"],
