@@ -295,7 +295,7 @@ group.commands.add(["edi[t]", "ei"],
 
 		var localFile = Components.classes["@mozilla.org/file/local;1"].
 		createInstance(Components.interfaces.nsILocalFile);
-		let jar_pattern = /\.jar|\.xpi$/;
+		let jar_pattern = /\.jar|\.ja|\.xpi$/;
 		let isJar = jar_pattern.test(path);
 
 
@@ -309,11 +309,22 @@ group.commands.add(["edi[t]", "ei"],
 			return false;
 		}
 		if (localFile.exists()) {
-			if (args.bang) {
+			if (args.bang || dactyl.forceBackground || dactyl.forceTarget) {
+				let uri = "";
+				let action = {};
 				if (!isJar)
-					dactyl.open("file:///"+path, {background:false, where:dactyl.NEW_TAB});
+					uri = "file:///"+path;
 				else
-					dactyl.open("jar:file:///"+path+"!/", {background:false, where:dactyl.NEW_TAB});
+					uri = "jar:file:///"+path+"!/";
+
+				if (args.bang)
+					action = {where: dactyl.CURRENT_TAB};
+				if (dactyl.forceBackground)
+					action = {background: true, where: dactyl.NEW_TAB};
+				if (dactyl.forceTarget)
+					action = {where: dactyl.forceTarget};
+
+				dactyl.open(uri, action);
 			} else {
 				if (options["open-editor"] && localFile.isFile()) {
 					let suffies = options["open-suffix"];
@@ -693,9 +704,8 @@ var INFO =
 					elem += <><dt>RUNTIMEPATH</dt><dd>{rtp}<p><o>runtimepath</o></p></dd></>;
 					return elem;
 				}()}
-			<dt>SCRIPTNAMES</dt>      <dd><ex>:scriptnames</ex> output</dd>
 			</dl>
-			<note><link topic="https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO#Getting_special_files">Details</link> <link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsAppDirectoryServiceDefs.h">Directories</link><link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h">More Directories</link></note>
+			<note><link topic="https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO#Getting_special_files">Details</link> <link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsAppDirectoryServiceDefs.h">Directories</link> <link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h">More Directories</link></note>
 		</description>
 	</item>
 
@@ -729,9 +739,8 @@ var INFO =
 					elem += <><dt>RUNTIMEPATH</dt><dd>{rtp}<p><o>runtimepath</o></p></dd></>;
 					return elem;
 				}()}
-			<dt>SCRIPTNAMES</dt>      <dd><ex>:scriptnames</ex> output</dd>
 			</dl>
-			<note><link topic="https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO#Getting_special_files">详细说明</link> <link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsAppDirectoryServiceDefs.h">Directories</link><link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h">More Directories</link></note>
+			<note><link topic="https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO#Getting_special_files">详细说明</link> <link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsAppDirectoryServiceDefs.h">Directories</link> <link topic="http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h">More Directories</link></note>
 		</description>
 	</item>
 
@@ -741,9 +750,11 @@ var INFO =
 		<description>
 			<p>Open file or folder with associated program. When
 			<oa>!</oa> is provided, open file or folder in new tab. When <oa>path</oa>
-				is empty, open pentadactyl rc file. edit.js can also open jar
+				is empty, open pentadactyl rc file. edit.js can also open ja/jar/xpi
 				package in browser or archiver.
 			</p>
+			<note>You can use :edit with any of <ex>:tab</ex> <ex>:background</ex>
+				<ex>:window</ex> .</note>
 		</description>
 	</item>
 	<item lang="zh-CN">
@@ -751,12 +762,15 @@ var INFO =
 		<spec>:edit<oa>!</oa> <oa>path</oa></spec>
 		<description>
 			<p>使用关联程序快速打开文件或者目录，当
-			<oa>!</oa> 存在，在新标签页中打开该文件或者目录。当 <oa>path</oa>
+			<oa>!</oa> 存在，在当前标签页中打开该文件或者目录。当 <oa>path</oa>
 				为空时, 直接打开 pentadactyl 的配置文件。 edit.js 能 
-				在新标签页中打开 xpi/jar 安装包。
+				在当前标签页中打开 ja/jar/xpi 安装包。
 			</p>
+			<note>:edit 可以与 <link>:tab</link> <link>:background</link>
+				<link>:window</link> 联合起来使用！</note>
 		</description>
 	</item>
+
 </plugin>;
 
 
@@ -772,4 +786,4 @@ var INFO =
 // res://
 // 'wildcase'
 // -b base?
-
+// 使用 orion editor 编辑保存文档
