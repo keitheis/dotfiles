@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Mon 27 Jun 2011 09:59:53 PM CST
-// @Last Change: Sat 11 Feb 2012 10:39:52 PM CST
-// @Revision:    117
+// @Last Change: Sun 12 Feb 2012 08:00:59 AM CST
+// @Revision:    118
 // @Description:
 // @Usage:
 // @TODO:
@@ -101,3 +101,7 @@ function tab(str, modifiers, silent) {
     }
     return res;
 }
+
+// <C-Return> 在新标签页中打开
+// <S-Return> 反转 args.bang，如果是针对 open/tabopen/winopen 命令，则是地址替换，比如把 baidu 自动替换为 baidu.com
+// <A-Return> 以后台方式在新标签页中打开
