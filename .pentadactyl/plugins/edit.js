@@ -71,8 +71,8 @@ let edit = {
 			['Home',			'OS root (for example /root)'],
 			['TmpD',			'OS tmp (for example /tmp)'],
 			['ProfLD',			'Local Settings on windows; where the network cache and fastload files are stored'],
-			['Desk',			'Desktop directory (for example ~/Desktop on Linux, C:\\Documents and Settings\\username\\Desktop on Windows)'],
-			// ['Progs',			'User start menu programs directory (for example C:\\Documents and Settings\\username\\Start Menu\\Programs)']
+			['Desk',			'Desktop directory (for example ~/Desktop on Linux, C:/Documents and Settings/username/Desktop on Windows)'],
+			// ['Progs',			'User start menu programs directory (for example C:/Documents and Settings/username/Start Menu/Programs)']
 	].map(function (item) {
 			let [path, description] = item;
 			return [path, description, services.directory.get(path, Ci.nsIFile).path];
@@ -387,7 +387,7 @@ group.commands.add(["edi[t]", "ei"],
 							if (config.OS.isWindows) {
 								try {
 									var file = Components.classes["@mozilla.org/file/local;1"]
-									.createInstance(Components.interfaces.nsILocalFile);
+										.createInstance(Components.interfaces.nsILocalFile);
 									file.initWithPath(options["open-editor"]);
 
 									var process = Components.classes["@mozilla.org/process/util;1"]
@@ -609,9 +609,10 @@ group.options.add(
 					if (context.filter)
 						completion.file(context, true, context.filter);
 					else {
-						if (config.OS.isWindows)
-							completion.file(context, true, "C:/Program\ Files/");
-						else
+						if (config.OS.isWindows) {
+							completion.file(context, true, "C:\\Program\ Files\\");
+							context.title[1] = "Do not use / as path seperator! For example: C:\\\\Program\\ Files\\\\Vim\\\\vim73\\\\gvim.exe";
+						} else
 							completion.file(context, true, "/");
 					}
 			});
@@ -649,7 +650,17 @@ group.options.add( // TODO: PATH environment
 	{
 		validator: function() true,
 		completer: function(context, args) {
-			completion.file(context);
+			context.fork("opfl", 0, this, function (context) {
+					if (context.filter)
+						completion.file(context, true, context.filter);
+					else {
+						if (config.OS.isWindows) {
+							completion.file(context, true, "C:\\Program\ Files\\");
+							context.title[1] = "Do not use / as path separator! For example: C:\\\\Program\\ Files\\\\Internet\\ Explorer\\\\IEXPLORE.EXE";
+						} else
+							completion.file(context, true, "/");
+					}
+			});
 		},
 	}
 );
