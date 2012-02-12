@@ -415,7 +415,7 @@ group.commands.add(["edi[t]", "ei"],
 			if (args.bang || !create)
 				dactyl.echoerr(path + " doesn't exists!", commandline.FORCE_SINGLELINE);
 			else {
-				let prompt = "Do you want to create file or directory (" + path + ") y/n: ";
+				let prompt = "Do you want to create file (" + path + ") y/n: ";
 				commandline.input(prompt, function(accept) {
 						accept = accept.trim();
 						if (accept === "y") {
