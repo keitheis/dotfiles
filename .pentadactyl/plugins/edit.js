@@ -225,8 +225,15 @@ function cpt(context, args) {
 			context.completions = locations;
 			context.compare = null;
 			if (idx == 1) {
-				context.filters = [CompletionContext.Filter.textDescription];
+				context.filters = [function (item) {
+						return item.text.toLowerCase().indexOf(context.filter.toLowerCase()) + 1 ||
+							   item.description.toLowerCase().indexOf(context.filter.toLowerCase()) + 1;
+				}];
 				context.title[0] = "Dirs";
+			} else {
+				context.filters = [function (item) {
+					return item.text.toLowerCase().indexOf(context.filter.toLowerCase()) + 1;
+				}]
 			}
 		});
 	});
@@ -283,7 +290,7 @@ function cpt(context, args) {
 group.commands.add(["edi[t]", "ei"],
 	"Open common folders or files",
 	function (args) {
-		let create = false;
+		let create = true;
 		let path = "";
 		let files = edit.files;
 		let dirs = edit.dirs;
@@ -301,15 +308,11 @@ group.commands.add(["edi[t]", "ei"],
 				let ctx = commandline.completionList.selected[0];
 				let idx = commandline.completionList.selected[1];
 				path = ctx.items[idx].path;
-				create = true;
 			} else {
 				if (commandline.completionList.context.activeContexts.length) {
 					let items = commandline.completionList.context.activeContexts[0].items
-					create = true;
 					if (items.length >= 1 && (typeof items[0].path == "string")) // 补全列表中只有一个可选项，默认使用。
 						path = items[0].path;
-					else
-						create = false;
 				}
 			}
 		}
@@ -442,7 +445,7 @@ group.commands.add(["edi[t]", "ei"],
 							} catch (e if e.result == Cr.NS_ERROR_FILE_ALREADY_EXISTS ) {
 								dactyl.echoerr(path + " already exists!", commandline.FORCE_SINGLELINE);
 							} catch (e) {
-								; //
+								dactyl.echoerr("Unable to create file : \"" + path + "\"!", commandline.FORCE_SINGLELINE);
 							}
 						}
 					}
