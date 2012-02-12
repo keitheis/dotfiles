@@ -4,8 +4,6 @@
 XML.ignoreWhitespace = XML.prettyPrinting = false;
 
 var PATH_SEP = File.PATH_SEP;
-var localFile = Components.classes["@mozilla.org/file/local;1"]
-	.createInstance(Components.interfaces.nsILocalFile);
 
 let edit = {
 	get RC() edit._RC || edit._setRC(),
@@ -94,40 +92,52 @@ let edit = {
 	get files() {
 		let locations = [];
 		options["open-files"].forEach(function (file) {
-			if (file === "RC") {
-				let rcfile = new File(edit.RC);
+			let expandfile = File.expandPath(file);
+			if (expandfile === "RC") {
+				let _file = new File(edit.RC);
 				locations.push({
 					text: edit.RC,
-					description: "RC - " + rcfile.path,
-					file: rcfile
+					description: file + " - " + _file.path,
+					file: _file
 				});
 			} else {
 				let ENV = file.split(/\\|\//)[0] || file;
 				if (ENV === "RUNTIMEPATH") {
 					io.getRuntimeDirectories("").forEach(function(item) {
 						let innerpath = item.path + file.slice(ENV.length);
-						let innerfile = new File(innerpath);
+						let _file = new File(innerpath);
 						locations.push({
 							text: innerpath,
 							description: file + " - " + innerpath,
-							file: innerfile
+							file: _file
 						});
 					});
 				} else {
 					try {
 						let partdir = services.directory.get(ENV, Ci.nsIFile);
-						let fullfile = new File(partdir.path + file.slice(ENV.length));
+						let _file = new File(partdir.path + file.slice(ENV.length));
 						locations.push({
-							text: fullfile.path,
-							description: file + " - " + fullfile.path,
-							file: fullfile,
+							text: _file.path,
+							description: file + " - " + _file.path,
+							file: _file,
 						});
 					} catch (e) {
-						locations.push({
-							text: file,
-							description: file,
-							file: false
-						});
+						try {
+							let _file = Components.classes["@mozilla.org/file/local;1"]
+								.createInstance(Components.interfaces.nsILocalFile);
+							_file.initWithPath(expandfile);
+							locations.push({
+								text: expandfile,
+								description: file,
+								file: _file
+							});
+						} catch (e) {
+							locations.push({
+								text: file,
+								description: file,
+								file: false
+							});
+						}
 					}
 				}
 			}
@@ -137,17 +147,20 @@ let edit = {
 	get dirs() {
 		let locations = [];
 		options["open-dirs"].forEach(function (dir) {
+			let expanddir = File.expandPath(dir);
 			// :scriptnames
 			if (dir === "SCRIPTNAMES") {
 				return false;
 			}
 
 			try {
-				let file = localFile.initWithPath(dir);
+				let _file = Components.classes["@mozilla.org/file/local;1"]
+					.createInstance(Components.interfaces.nsILocalFile);
+				_file.initWithPath(expanddir);
 				locations.push({
-					text: file.path,
-					description: file.leafName,
-					file: file
+					text: _file.path,
+					description: dir,
+					file: _file
 				});
 			} catch (e) {
 				let ENV = dir.split(/\\|\//)[0] || dir;
@@ -614,11 +627,11 @@ function openFile(file) {
 		var program = options["open-folder"];
 		// create an nsILocalFile for the executable
 		var exec = Components.classes["@mozilla.org/file/local;1"]
-		.createInstance(Components.interfaces.nsILocalFile);
+			.createInstance(Components.interfaces.nsILocalFile);
 		exec.initWithPath(program);
 
 		var process = Components.classes["@mozilla.org/process/util;1"]
-		.createInstance(Components.interfaces.nsIProcess);
+			.createInstance(Components.interfaces.nsIProcess);
 		process.init(exec);
 
 		var args = [file.path];
