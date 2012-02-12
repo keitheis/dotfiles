@@ -4,6 +4,8 @@
 XML.ignoreWhitespace = XML.prettyPrinting = false;
 
 var PATH_SEP = File.PATH_SEP;
+var localFile = Components.classes["@mozilla.org/file/local;1"]
+	.createInstance(Components.interfaces.nsILocalFile);
 
 let edit = {
 	get RC() edit._RC || edit._setRC(),
@@ -89,93 +91,157 @@ let edit = {
 			absolute_pattern = /^[a-zA-Z]:[\/\\]|~/;
 		return absolute_pattern.test(path);
 	},
-
-	get files() edit._files,
-	set files(value) {
-		edit._files = value;
-	},
-	getFiles: function(value) {
-		let _files = [];
-		value.forEach(function (path) {
-			let _path = false;
-			if (path === "RC") {
-				_path = edit.RC;
+	get files() {
+		let locations = [];
+		options["open-files"].forEach(function (file) {
+			if (file === "RC") {
+				let rcfile = new File(edit.RC);
+				locations.push({
+					text: edit.RC,
+					description: "RC - " + rcfile.path,
+					file: rcfile
+				});
 			} else {
-				let DIR = path.split(/\\|\//)[0];
-				if (DIR === "RUNTIMEPATH") {
+				let ENV = file.split(/\\|\//)[0] || file;
+				if (ENV === "RUNTIMEPATH") {
 					io.getRuntimeDirectories("").forEach(function(item) {
-						let innerpath = item.path + path.slice(DIR.length);
+						let innerpath = item.path + file.slice(ENV.length);
 						let innerfile = new File(innerpath);
-						if (innerfile.exists)
-							_files.push({path: innerfile.path});
+						locations.push({
+							text: innerpath,
+							description: file + " - " + innerpath,
+							file: innerfile
+						});
 					});
 				} else {
 					try {
-						let partdir = services.directory.get(DIR, Ci.nsIFile);
-						_path = partdir.path + path.slice(DIR.length);
+						let partdir = services.directory.get(ENV, Ci.nsIFile);
+						let fullfile = new File(partdir.path + file.slice(ENV.length));
+						locations.push({
+							text: fullfile.path,
+							description: file + " - " + fullfile.path,
+							file: fullfile,
+						});
 					} catch (e) {
-						if (edit.isAbsolutePath(path))
-							_path = path;
+						locations.push({
+							text: file,
+							description: file,
+							file: false
+						});
 					}
 				}
 			}
-
-			if (_path !== false)
-				_files.push({path: _path});
 		});
-		return _files;
+		return locations;
 	},
-	get dirs() edit._dirs,
-	set dirs(value) {
-		edit._dirs = value;
-	},
-	getDirs: function (value) {
-		let _dirs = [];
-		value.forEach(function (path) {
-			let file = new File(path);
-			let _item = {path: false, opds: true, raw: path};
+	get dirs() {
+		let locations = [];
+		options["open-dirs"].forEach(function (dir) {
+			// :scriptnames
+			if (dir === "SCRIPTNAMES") {
+				return false;
+			}
 
-			if (file.exists() && file.isDirectory()) {
-				_item.path = file.path;
-			} else if (path !== "SCRIPTNAMES"){
-				let DIR = path.split(/\\|\//)[0] || path;
+			try {
+				let file = localFile.initWithPath(dir);
+				locations.push({
+					text: file.path,
+					description: file.leafName,
+					file: file
+				});
+			} catch (e) {
+				let ENV = dir.split(/\\|\//)[0] || dir;
 
-				if (DIR === "RUNTIMEPATH") {
+				if (ENV === "RUNTIMEPATH") {
 					io.getRuntimeDirectories("").forEach(function(item) {
-						let innerpath = item.path + path.slice(DIR.length);
+						let innerpath = item.path + dir.slice(ENV.length);
 						let innerfile = new File(innerpath);
-						if (innerfile.exists() && innerfile.isDirectory())
-							_dirs.push({path: innerfile.path, opds: true, raw: path + " - " + innerfile.path});
+						locations.push({
+							text: innerfile.path,
+							description: dir + " - " + innerfile.path,
+							file: innerfile
+						});
 					});
-				}
-
-				try {
-					let partdir = services.directory.get(DIR, Ci.nsIFile);
-					let fulldir = new File(partdir.path + path.slice(DIR.length));
-					if (fulldir.exists() && fulldir.isDirectory())
-						_item.path = fulldir.path;
-				} catch (e) {
-					; // do nth
+				} else {
+					try {
+						let partdir = services.directory.get(ENV, Ci.nsIFile);
+						let fulldir = new File(partdir.path + dir.slice(ENV.length));
+						locations.push({
+							text: fulldir.path,
+							description: dir,
+							file: fulldir
+						});
+					} catch (e) {
+						locations.push({
+							text: dir,
+							description: dir,
+							file: false
+						});
+					}
 				}
 			}
-			if (_item.path !== false)
-				_dirs.push(_item);
 		});
+		return locations;
+	},
+};
 
-		return _dirs;
-	}
-}
 function cpt(context, args) {
+	// let dirs = edit.dirs;
+	// let places = edit.files.concat(dirs);
+	let arg = args[0] || "";
 	let dirs = edit.dirs;
-	let places = edit.files.concat(dirs);
+	let files = edit.files;
 
-	let arg = "";
-	if (args.length == 1)
-		arg = args[0];
-
-	// :scriptnames
-	if (options["open-dirs"].indexOf("SCRIPTNAMES") >= 0) {
-		context.fork("scriptnames", 0, this, function (context) {
+	[files, dirs].forEach(function (locations, idx) {
+		let context_name = "open-files";
+		if (idx == 1)
+			context_name = "open-dirs";
+		context.fork(context_name, 0, this, function(context) {
+			context.title = ["Files", "Description"];
+			context.keys = {
+				text: "text",
+				description: "description",
+				icon: function (item) {
+					if (item.file && item.file.exists()) {
+						if (item.file.isDirectory())
+							return "resource://gre/res/html/folder.png";
+						else
+							return "moz-icon://" + item.file.path;
+					}
+					return "moz-icon://" + item.text;
+				},
+				path: function (item) item.file.path || item.text,
+				exists: function (item) item.file && item.file.exists()
+			};
+			if (idx == 0)
+				context.keys.text = function (item) item.file ? item.file.leafName : item.text;
+			let p1 = context.process[1];
+			context.process[1] = function (item, text) {
+				if (item.exists)
+					return p1(item, text);
+				else
+					return <><del>{text}</del></>;
+			};
+			context.completions = locations;
+			context.compare = null;
+			if (idx == 1) {
+				context.filters = [CompletionContext.Filter.textDescription];
+				context.title[0] = "Dirs";
+			}
+		});
+	});
+	if (edit.isAbsolutePath(arg)) {
+		let dir = {path:arg, description:"Absolute Path"};
+		context.fork(dir.path, 0, this, function (context) {
+				completion.file(context, false, dir.path);
+				context.title[0] = arg.match(/^(?:.*[\/\\])?/)[0];
+				context.filters[0] = function (item) {
+					return item.text.toLowerCase().indexOf(context.filter.toLowerCase()) + 1;
+				};
+		});
+	} else {
+		if (options["open-dirs"].indexOf("SCRIPTNAMES") + 1) {
+			context.fork("scriptnames", 0, this, function (context) {
 				context.title= ["scriptnames", "path"];
 				let completions = [];
 				context.compare = null;
@@ -192,61 +258,26 @@ function cpt(context, args) {
 				context.filters = [function (item) {
 					return item.text.toLowerCase().indexOf(arg.toLowerCase()) + 1;
 				}];
-		});
-	}
-
-	if (edit.isAbsolutePath(arg)) {
-		let dir = {path:arg, description:"Absolute Path"};
-		context.fork(dir.path, 0, this, function (context) {
-				completion.file(context, false, dir.path);
-				context.title[0] = arg.match(/^(?:.*[\/\\])?/)[0];
-				context.filters[0] = function (item) {
-					return item.text.toLowerCase().indexOf(context.filter.toLowerCase()) + 1;
-				};
-		});
-	} else {
-		dirs.forEach(function(dirObj, idx) {
-			let dir = dirObj.path;
-			context.fork(dir, 0, this, function (context) {
-				let dirPart = arg.match(/^(?:.*[\/\\])?/)[0];
-				context.advance(dirPart.length);
-				dir = dir.replace("/+$", "") + "/";
-				completion.file(context, true, dir + arg);
-				context.title[0] = dir + dirPart;
-				context.keys.text = function (f) this.path.substr(dir.length+dirPart.length);
-				context.filters[0] = function (item) {
-					return item.text.toLowerCase().indexOf(context.filter.toLowerCase()) + 1;
-				};
 			});
+		}
+		dirs.forEach(function(dir, idx) {
+			if (dir.file && dir.file.exists() && dir.file.isDirectory()) {
+				let file = dir.file;
+				let path = dir.file.path.replace("/+$", "") + "/";
+				context.fork(file.path, 0, this, function (context) {
+					let dirPart = arg.match(/^(?:.*[\/\\])?/)[0];
+					context.advance(dirPart.length);
+					completion.file(context, true, path + arg);
+					context.title[0] = path + dirPart;
+					context.keys.text = function (f) this.path.substr(path.length+dirPart.length);
+					context.filters[0] = function (item) {
+						return item.text.toLowerCase().indexOf(context.filter.toLowerCase()) + 1;
+					};
+				});
+			}
 		});
 	}
 
-	context.title = ["Shortcuts", "path"];
-	context.keys = {
-		text: function (item) "opds" in item ? item.path : (new File(item.path)).leafName,
-		description: function (item) "opds" in item ? item.raw : item.path,
-		icon: function (item) "opds" in item ? "resource://gre/res/html/folder.png"
-									  : "moz-icon://" + (new File(item.path)).leafName,
-		path: function (item) item.path
-	};
-	let p1 = context.process[1];
-	context.process[1] = function (item, text) {
-		if ((new File(item.path)).exists())
-			return p1(item, text);
-		else
-			return <><del>{text}</del></>;
-	};
-	context.filters = [];
-	context.generate = function () places;
-	context.compare = null;
-	context.filters.push(function (item) {
-			// FIXME: item.item
-			if (item.item.opds) {
-				return item.item.path.toLowerCase().indexOf(arg.toLowerCase()) >= 0 || item.item.raw.toLowerCase().indexOf(arg.toLowerCase()) >= 0;
-			} else {
-				return (new File(item.item.path)).leafName.toLowerCase().indexOf(arg.toLowerCase()) >= 0;
-			}
-	});
 }
 
 group.commands.add(["edi[t]", "ei"],
@@ -254,9 +285,12 @@ group.commands.add(["edi[t]", "ei"],
 	function (args) {
 		let create = false;
 		let path = "";
+		let files = edit.files;
+		let dirs = edit.dirs;
+
 		if (args.length == 0) {
-			if (edit.files[0])
-				path = edit.files[0]["path"];
+			if (files[0])
+				path = files[0]["file"].path || files[0]["text"];
 			else
 				path = edit.RC;
 		} else if (edit.isAbsolutePath(args[0])) {
@@ -269,19 +303,33 @@ group.commands.add(["edi[t]", "ei"],
 				path = ctx.items[idx].path;
 				create = true;
 			} else {
-				let items = commandline.completionList.context.activeContexts[0].items
-				create = true;
-				if (items.length >= 1 && (typeof items[0].path == "string")) // 补全列表中只有一个可选项，默认使用。
-					path = items[0].path;
-				else
-					create = false;
+				if (commandline.completionList.context.activeContexts.length) {
+					let items = commandline.completionList.context.activeContexts[0].items
+					create = true;
+					if (items.length >= 1 && (typeof items[0].path == "string")) // 补全列表中只有一个可选项，默认使用。
+						path = items[0].path;
+					else
+						create = false;
+				}
 			}
 		}
 
 		path = File.expandPath(path);
+		let command = commandline.command;
+		command = command.substr(0, command.lastIndexOf(args[0])) + path;
+		commands.repeat = command; // 让 : 寄存器和 @: 工作
+		// 重写历史记录，用绝对地址替换
+		let store = commandline._store.get("command", []);
+		store = commandline._store.set("command",
+			store.filter(function (line) (line.value || line) != commandline.command));
+		store.push({
+			value: command,
+			timestamp: Date.now()*1000,
+			privateData: commands.hasPrivateData(command)
+		});
 
 		var localFile = Components.classes["@mozilla.org/file/local;1"].
-		createInstance(Components.interfaces.nsILocalFile);
+			createInstance(Components.interfaces.nsILocalFile);
 		let jar_pattern = /\.jar|\.ja|\.xpi$/;
 		let isJar = jar_pattern.test(path);
 
@@ -438,7 +486,6 @@ group.options.add( // TODO: completer, validator
 			}
 		},
 		setter: function (value) {
-			edit.files = edit.getFiles(value);
 			return value;
 		},
 		validator: function (value) true
@@ -463,10 +510,10 @@ group.options.add( // TODO: completer, validator
 						let icon = "resource://gre/res/html/folder.png";
 						switch ( item[0] ) {
 							case "SCRIPTNAMES" :
-							icon = "";
+							icon = "moz-icon://.js";
 							break;
 							case "RUNTIMEPATH" :
-							icon = "";
+							icon = "moz-icon:///";
 							break;
 							default:
 							break;
@@ -481,7 +528,6 @@ group.options.add( // TODO: completer, validator
 			}
 		},
 		setter: function (value) {
-			edit.dirs = edit.getDirs(value);
 			return value;
 		},
 		validator: function (value) true
