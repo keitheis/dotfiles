@@ -2,11 +2,11 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Sun 26 Feb 2012 04:22:37 AM CST
-// @Last Change: Sun 26 Feb 2012 01:59:51 PM CST
-// @Revision:    108
+// @Last Change: Sun 26 Feb 2012 03:20:02 PM CST
+// @Revision:    112
 // @Description:
 // @Usage:       set hintmatching=custom " pinyin
-//               set hintmatching=custom chinese-hints=wubi " wubi
+//               set hintmatching=custom chinesehints=wubi " wubi
 // @TODO:
 // @CHANGES:
 
@@ -32,21 +32,26 @@ function matcher(hintString) { //{{{
     return function (linkText) {
         linkText = linkText.toLowerCase();
         return tokens.every(function (token) linkText.indexOf(token) >= 0) ||
-            tokens.every(function (token) trans(linkText, options["chinese-hints"]).indexOf(token) >= 0);
+            tokens.every(function (token) trans(linkText, options["chinesehints"]).indexOf(token) >= 0);
     };
 }
 
-dactyl.plugins.customHintMatcher = matcher;
-
-group.options.add(['chinese-hints', 'chnh'],
-    'hint matching algorithm for Chinese',
-    'string',
-    'pinyin',
-    {
-        validator: function(value) {
-            return ['pinyin', 'wubi'].indexOf(value) + 1;
-        },
-        completer: function() [['pinyin', '拼音'], ['wubi', '五笔']]
-    }
-);
-
+try {
+    dactyl.plugins.customHintMatcher = matcher;
+    var opt = group.options;
+} catch (e) {
+    liberator.plugins.customHintMatcher = matcher;
+    var opt = options;
+} finally {
+    opt.add(['chinesehints', 'chnh'],
+        'hint matching algorithm for Chinese',
+        'string',
+        'pinyin',
+        {
+            validator: function(value) {
+                return ['pinyin', 'wubi'].indexOf(value) + 1;
+            },
+            completer: function() [['pinyin', '拼音'], ['wubi', '五笔']]
+        }
+    );
+}
