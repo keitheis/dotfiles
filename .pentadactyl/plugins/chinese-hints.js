@@ -27,7 +27,7 @@ function trans(linkText, type) {
 
 function tokenize(pat, str) str.split(pat).map(String.toLowerCase);
 
-function matcher(hintString) { //{{{
+function matcher(hintString) {
     let tokens = tokenize(/\s+/, hintString);
     return function (linkText) {
         linkText = linkText.toLowerCase();
