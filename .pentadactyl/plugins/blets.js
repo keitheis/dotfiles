@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Mon 19 Mar 2012 01:41:16 AM CST
-// @Last Change: Tue 20 Mar 2012 12:21:18 AM CST
-// @Revision:    176
+// @Last Change: Tue 20 Mar 2012 12:47:22 AM CST
+// @Revision:    177
 // @Description:
 // @Usage:
 // @TODO:
@@ -1283,7 +1283,8 @@ group.commands.add(['blets'],
                 return false;
             }
             let encode = encodeURI('javascript:' + code);
-            dactyl.clipboardWrite(encode, true);
+            dactyl.clipboardWrite(encode);
+            dactyl.echo(encode, commandline.FORCE_MULTILINE);
         } else if (args['-d'] || args['--decode']) {
             let url = args[0] || dactyl.clipboardRead();
             url = url.trim();
@@ -1296,8 +1297,9 @@ group.commands.add(['blets'],
                 dactyl.echo('Unknown protocol, your code should begin with \'javascript:\'');
                 return false;
             }
-            let code = decodeURIComponent(uri.path);
-            dactyl.clipboardWrite(js_beautify(code), true);
+            let code = js_beautify(decodeURIComponent(uri.path));
+            dactyl.clipboardWrite(code);
+            dactyl.echo(code, commandline.FORCE_MULTILINE);
         } else if (args['-f'] || args['--file'] || args['-l'] || args['--load']) {
             try {
                 if (args.length == 0) {
@@ -1332,7 +1334,8 @@ group.commands.add(['blets'],
                             let code = NetUtil.readInputStreamToString(inputStream, inputStream.available());
                             if (args['-f'] || args['--file']) {
                                 let encode = encodeURI('javascript:' + code);
-                                dactyl.clipboardWrite(encode, true);
+                                dactyl.clipboardWrite(encode);
+                                dactyl.echo(encode, commandline.FORCE_MULTILINE);
                             } else {
                                 dactyl.open(encodeURI('javascript:' + code), {where: dactyl.CURRENT_TAB});
                                 dactyl.echomsg(localFile.path + ' 已以 bookmarklet 形式加载！');
