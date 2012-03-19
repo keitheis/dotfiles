@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Mon 19 Mar 2012 01:41:16 AM CST
-// @Last Change: Mon 19 Mar 2012 09:00:05 PM CST
-// @Revision:    153
+// @Last Change: Mon 19 Mar 2012 10:33:33 PM CST
+// @Revision:    155
 // @Description:
 // @Usage:
 // @TODO:
@@ -15,7 +15,7 @@ group.commands.add(['blets'],
     function(args) {
         if (args.bang) {
             blets = bookmarks.get('javascript:');
-            dactyl.echomsg('Finish rebuilt bookmarklets index');
+            dactyl.echomsg('Finish rebuilding of bookmarklets index');
         } else if (args['-e'] || args['--encode']) {
             if (args.length == 0) {
                 dactyl.echoerr('Missing javascript code');
@@ -26,7 +26,7 @@ group.commands.add(['blets'],
             dactyl.clipboardWrite(encode, true);
         } else if (args['-d'] || args['--decode']) {
             if (args.length == 0) {
-                dactyl.echoerr('missing url');
+                dactyl.echoerr('Missing bookmarklet url');
                 return false;
             }
             let url = args[0];
@@ -88,9 +88,9 @@ group.commands.add(['blets'],
             let keyword = args[0];
             let item = bookmarkcache.keywords[keyword];
             if (item) {
-                dactyl.open(item.url);
+                dactyl.open(item.url, {where: dactyl.CURRENT_TAB});
             } else {
-                dactyl.open(encodeURI('javascript:' + keyword));
+                dactyl.open(encodeURI('javascript:' + keyword), {where: dactyl.CURRENT_TAB});
             }
         }
     },
