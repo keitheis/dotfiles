@@ -49,7 +49,6 @@ group.commands.add(['blets'],
                     if (res != nsIFilePicker.returnCancel) {
                         var localFile = fp.file;
                     } else {
-                        dactyl.echoerr('未选择文件！');
                         return false;
                     }
                 } else {
