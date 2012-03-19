@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Mon 19 Mar 2012 01:41:16 AM CST
-// @Last Change: Mon 19 Mar 2012 11:31:14 PM CST
-// @Revision:    169
+// @Last Change: Mon 19 Mar 2012 11:51:45 PM CST
+// @Revision:    174
 // @Description:
 // @Usage:
 // @TODO:
@@ -17,19 +17,21 @@ group.commands.add(['blets'],
             blets = bookmarks.get('javascript:');
             dactyl.echomsg('Finish rebuilding of bookmarklets index');
         } else if (args['-e'] || args['--encode']) {
-            if (args.length == 0) {
+            let code = args[0] || dactyl.clipboardRead();
+            code = code.trim();
+            if (code.length == 0) {
                 dactyl.echoerr('Missing javascript code');
                 return false;
             }
-            let code = args[0];
             let encode = encodeURI('javascript:' + code);
             dactyl.clipboardWrite(encode, true);
         } else if (args['-d'] || args['--decode']) {
-            if (args.length == 0) {
+            let url = args[0] || dactyl.clipboardRead();
+            url = url.trim();
+            if (url.length == 0) {
                 dactyl.echoerr('Missing bookmarklet url');
                 return false;
             }
-            let url = args[0];
             let uri = util.createURI(url);
             if (uri.scheme !== 'javascript') {
                 dactyl.echo('Unknown protocol, your code should begin with \'javascript:\'');
@@ -86,11 +88,12 @@ group.commands.add(['blets'],
 
             }
         } else if (args['-o'] || args['--open']) {
-            if (args.length == 0) {
+            let url = args[0] || dactyl.clipboardRead();
+            url = url.trim();
+            if (url.length == 0) {
                 dactyl.echoerr('Missing bookmarklet url');
                 return false;
             }
-            let url = args[0];
             let uri = util.createURI(url);
             if (uri.scheme !== 'javascript') {
                 dactyl.echo('Unknown protocol, your code should begin with \'javascript:\'');
@@ -99,15 +102,20 @@ group.commands.add(['blets'],
             dactyl.open(url, {where: dactyl.CURRENT_TAB});
             dactyl.echomsg('指定 bookmarklet 已在当前标签页加载！');
         } else {
-            if (args.length == 0) {
+            let keyword = args[0] || dactyl.clipboardRead();
+            keyword = keyword.trim();
+            if (keyword.length == 0) {
                 dactyl.echoerr('Missing keyword');
                 return false;
             }
-            let keyword = args[0];
             let item = bookmarkcache.keywords[keyword];
             if (item) {
-                dactyl.open(item.url, {where: dactyl.CURRENT_TAB});
-                dactyl.echomsg('关键字已在当前标签页加载！');
+                if (item.scheme == 'javascript') {
+                    dactyl.open(item.url, {where: dactyl.CURRENT_TAB});
+                    dactyl.echomsg('关键字已在当前标签页加载！');
+                } else {
+                    dactyl.echoerr('关键字 ' + keyword + ' 不是 bookmarklet 书签！');
+                }
             } else {
                 let code = keyword
                 dactyl.open(encodeURI('javascript:' + code), {where: dactyl.CURRENT_TAB});
