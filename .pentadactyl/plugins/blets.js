@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Mon 19 Mar 2012 01:41:16 AM CST
-// @Last Change: Mon 19 Mar 2012 10:33:33 PM CST
-// @Revision:    155
+// @Last Change: Mon 19 Mar 2012 11:31:14 PM CST
+// @Revision:    169
 // @Description:
 // @Usage:
 // @TODO:
@@ -37,7 +37,7 @@ group.commands.add(['blets'],
             }
             let code = decodeURIComponent(uri.path);
             dactyl.clipboardWrite(code, true);
-        } else if (args['-f'] || args['--file']) {
+        } else if (args['-f'] || args['--file'] || args['-l'] || args['--load']) {
             try {
                 if (args.length == 0) {
                     var nsIFilePicker = Components.interfaces.nsIFilePicker;
@@ -69,8 +69,13 @@ group.commands.add(['blets'],
                             }
 
                             let code = NetUtil.readInputStreamToString(inputStream, inputStream.available());
-                            let encode = encodeURI('javascript:' + code);
-                            dactyl.clipboardWrite(encode, true);
+                            if (args['-f'] || args['--file']) {
+                                let encode = encodeURI('javascript:' + code);
+                                dactyl.clipboardWrite(encode, true);
+                            } else {
+                                dactyl.open(encodeURI('javascript:' + code), {where: dactyl.CURRENT_TAB});
+                                dactyl.echomsg(localFile.path + ' 已以 bookmarklet 形式加载！');
+                            }
                     });
                 } else {
                     dactyl.echoerr('文件不可读或者是错误');
@@ -80,6 +85,19 @@ group.commands.add(['blets'],
             } finally {
 
             }
+        } else if (args['-o'] || args['--open']) {
+            if (args.length == 0) {
+                dactyl.echoerr('Missing bookmarklet url');
+                return false;
+            }
+            let url = args[0];
+            let uri = util.createURI(url);
+            if (uri.scheme !== 'javascript') {
+                dactyl.echo('Unknown protocol, your code should begin with \'javascript:\'');
+                return false;
+            }
+            dactyl.open(url, {where: dactyl.CURRENT_TAB});
+            dactyl.echomsg('指定 bookmarklet 已在当前标签页加载！');
         } else {
             if (args.length == 0) {
                 dactyl.echoerr('Missing keyword');
@@ -89,8 +107,11 @@ group.commands.add(['blets'],
             let item = bookmarkcache.keywords[keyword];
             if (item) {
                 dactyl.open(item.url, {where: dactyl.CURRENT_TAB});
+                dactyl.echomsg('关键字已在当前标签页加载！');
             } else {
-                dactyl.open(encodeURI('javascript:' + keyword), {where: dactyl.CURRENT_TAB});
+                let code = keyword
+                dactyl.open(encodeURI('javascript:' + code), {where: dactyl.CURRENT_TAB});
+                dactyl.echomsg('指定代码已以 bookmarklet 形式在当前标签页加载！');
             }
         }
     },
@@ -99,12 +120,14 @@ group.commands.add(['blets'],
         bang: true,
         completer: function(context, args) {
             if (args.bang ||
-               args['-e'] || args['--encode']
+                args['-e'] || args['--encode'] ||
+                args['-d'] || args['--decode'] ||
+                args['-o'] || args['--open']
             ) {
                 return false;
             }
 
-            if (args['-f'] || args['--file']) {
+            if (args['-f'] || args['--file'] || args['-l'] || args['--load']) {
                 completion.file(context, true);
                 return true;
             }
@@ -112,11 +135,7 @@ group.commands.add(['blets'],
             context.completions = blets;
             context.format = bookmarks.format;
             context.regenerate = true;
-            if (args['-d'] || args['--decode']) {
-                context.keys.text = function(item) item.uri.spec;
-            } else {
-                context.keys.text = function(item) item.keyword || decodeURIComponent(item.uri.path);
-            }
+            context.keys.text = function(item) item.keyword || decodeURIComponent(item.uri.path);
             context.keys.description = function(item)
                 item.keyword ? item.title + ' | ' + decodeURIComponent(item.uri.path) : item.title;
             context.process[0] = function(item) <>{item.text}</>;
@@ -134,8 +153,18 @@ group.commands.add(['blets'],
                 type: CommandOption.NOARG
             },
             {
+                names: ['-o', '--open'],
+                description: '打开 bookmarklet 链接',
+                type: CommandOption.NOARG
+            },
+            {
                 names: ['-f', '--file'],
                 description: '从 javascript 源代码文件，生成 bookmarklet',
+                type: CommandOption.NOARG
+            },
+            {
+                names: ['-l', '--load'],
+                description: '直接以 bookmarklet 形式加载 javascript 源代码文件',
                 type: CommandOption.NOARG
             }
         ],
