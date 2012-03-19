@@ -2,8 +2,8 @@
 // @Author:      eric.zou (frederick.zou@gmail.com)
 // @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 // @Created:     Mon 19 Mar 2012 01:41:16 AM CST
-// @Last Change: Tue 20 Mar 2012 12:47:22 AM CST
-// @Revision:    177
+// @Last Change: Tue 20 Mar 2012 01:04:32 AM CST
+// @Revision:    186
 // @Description:
 // @Usage:
 // @TODO:
@@ -1390,9 +1390,7 @@ group.commands.add(['blets'],
         bang: true,
         completer: function(context, args) {
             if (args.bang ||
-                args['-e'] || args['--encode'] ||
-                args['-d'] || args['--decode'] ||
-                args['-o'] || args['--open']
+                args['-e'] || args['--encode']
             ) {
                 return false;
             }
@@ -1402,14 +1400,20 @@ group.commands.add(['blets'],
                 return true;
             }
 
-            context.completions = blets;
             context.format = bookmarks.format;
             context.regenerate = true;
-            context.keys.text = function(item) item.keyword || decodeURIComponent(item.uri.path);
+            if (args['-d'] || args['--decode'] || args['-o'] || args['--open']) {
+                context.keys.text = function(item) item.uri.spec;
+            } else {
+                context.keys.text = function(item) item.keyword || decodeURIComponent(item.uri.path);
+            }
             context.keys.description = function(item)
                 item.keyword ? item.title + ' | ' + decodeURIComponent(item.uri.path) : item.title;
             context.process[0] = function(item) <>{item.text}</>;
             context.filters = [CompletionContext.Filter.textDescription];
+            context.generate = function() {
+                context.completions = blets;
+            };
         },
         options: [
             {
