@@ -460,8 +460,7 @@ group.mappings.add(
 			}, null, ["*"]);
 		}
 		modes.push(modes.NORMAL);
-		events.feedkeys(";", true, true, modes.NORMAL);
-		events.feedkeys("Q", true, true);
+		hints.show('Q');
 		// Firebug.showBar(true);
 	}
 );
